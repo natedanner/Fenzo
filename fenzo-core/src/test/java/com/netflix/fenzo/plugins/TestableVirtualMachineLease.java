@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class TestableVirtualMachineLease implements VirtualMachineLease {
+public final class TestableVirtualMachineLease implements VirtualMachineLease {
 
     private final String id;
 

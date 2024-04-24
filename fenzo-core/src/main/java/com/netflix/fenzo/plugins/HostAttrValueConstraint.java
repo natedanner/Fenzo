@@ -73,17 +73,18 @@ public class HostAttrValueConstraint implements ConstraintEvaluator {
     }
 
     private String getAttrValue(VirtualMachineLease lease) {
-        switch (hostAttributeName) {
-            case HOSTNAME:
-                return lease.hostname();
-            default:
-                Map<String,Protos.Attribute> attributeMap = lease.getAttributeMap();
-                if(attributeMap==null)
-                    return null;
-                Protos.Attribute attribute = attributeMap.get(hostAttributeName);
-                if(attribute==null)
-                    return null;
-                return attribute.getText().getValue();
+        if (HOSTNAME.equals(hostAttributeName)) {
+            return lease.hostname();
+        } else {
+            Map<String, Protos.Attribute> attributeMap = lease.getAttributeMap();
+            if (attributeMap == null) {
+                return null;
+            }
+            Protos.Attribute attribute = attributeMap.get(hostAttributeName);
+            if (attribute == null) {
+                return null;
+            }
+            return attribute.getText().getValue();
         }
     }
 }

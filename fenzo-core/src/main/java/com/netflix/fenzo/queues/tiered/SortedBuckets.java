@@ -60,38 +60,44 @@ class SortedBuckets {
     }
 
     boolean add(QueueBucket bucket) {
-        if (bucketMap.containsKey(bucket.getName()))
+        if (bucketMap.containsKey(bucket.getName())) {
             return false;
-        if (buckets.isEmpty())
+        }
+        if (buckets.isEmpty()) {
             buckets.add(bucket);
-        else
+        } else {
             buckets.add(findInsertionPoint(bucket, buckets), bucket);
+        }
         bucketMap.put(bucket.getName(), bucket);
         return true;
     }
 
     QueueBucket remove(String bucketName) {
         final QueueBucket bucket = bucketMap.get(bucketName);
-        if (bucket == null)
+        if (bucket == null) {
             return null;
+        }
         final int index = findInsertionPoint(bucket, buckets);
-        if (index < 0)
+        if (index < 0) {
             throw new IllegalStateException("Unexpected: bucket with name=" + bucketName + " does not exist");
+        }
         // we have now found a bucket that has the same position due to its usage value. The actual bucket we are
         // interested in (with the same name) may be the same one or it may be to the left or right a few positions.
         int remPos = buckets.get(index).getName().equals(bucketName)? index : -1;
-        if (remPos < 0)
+        if (remPos < 0) {
             remPos = findWalkingLeft(buckets, index, bucketName, bucket.getDominantUsageShare());
-        if (remPos < 0)
+        }
+        if (remPos < 0) {
             remPos = findWalkingRight(buckets, index, bucketName, bucket.getDominantUsageShare());
+        }
         if (remPos < 0) {
             logger.error("Unexpected: bucket with name=" + bucketName + " not found to remove, traversing " +
                     buckets.size() + " buckets to remove it");
             logger.warn("Invalid sorted buckets list: " + getBucketsListString());
             removeBucketAndResort(bucketName);
-        }
-        else
+        } else {
             buckets.remove(remPos);
+        }
         bucketMap.remove(bucketName);
         return bucket;
     }
@@ -142,8 +148,9 @@ class SortedBuckets {
     private int findWalkingRight(List<QueueBucket> buckets, int index, String bucketName, double dominantUsageShare) {
         int pos = index;
         while (++pos < buckets.size() && buckets.get(pos).getDominantUsageShare() == dominantUsageShare) {
-            if (buckets.get(pos).getName().equals(bucketName))
+            if (buckets.get(pos).getName().equals(bucketName)) {
                 return pos;
+            }
         }
         return -1;
     }
@@ -151,16 +158,18 @@ class SortedBuckets {
     private int findWalkingLeft(List<QueueBucket> buckets, int index, String bucketName, double dominantUsageShare) {
         int pos = index;
         while (--pos >= 0 && buckets.get(pos).getDominantUsageShare() == dominantUsageShare) {
-            if (buckets.get(pos).getName().equals(bucketName))
+            if (buckets.get(pos).getName().equals(bucketName)) {
                 return pos;
+            }
         }
         return -1;
     }
 
     private int findInsertionPoint(QueueBucket bucket, List<QueueBucket> buckets) {
         final int i = Collections.binarySearch(buckets, bucket, comparator);
-        if (i >= 0)
+        if (i >= 0) {
             return i;
+        }
         return -i - 1;
     }
 

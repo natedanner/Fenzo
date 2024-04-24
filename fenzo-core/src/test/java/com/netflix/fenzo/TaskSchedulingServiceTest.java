@@ -114,10 +114,12 @@ public class TaskSchedulingServiceTest {
                         "hostA", 4, 4000, ports,
                         ResourceSetsTests.getResSetsAttributesMap("ENIs", 2, 2))));
         queue.queueTask(queuableTask);
-        if (!latch.await(20000, TimeUnit.MILLISECONDS))
+        if (!latch.await(20000, TimeUnit.MILLISECONDS)) {
             Assert.fail("Did not assign resources in time");
-        if (action != null)
+        }
+        if (action != null) {
             action.call();
+        }
     }
 
     @Test
@@ -182,8 +184,9 @@ public class TaskSchedulingServiceTest {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(1, 1000, 1)));
             Thread.sleep(loopMillis); // simulate that tasks are added across different scheduling iterations
         }
-        if (!latch.await(loopMillis * (numTasks + 2), TimeUnit.MILLISECONDS))
+        if (!latch.await(loopMillis * (numTasks + 2), TimeUnit.MILLISECONDS)) {
             Assert.fail(latch.getCount() + " of " + numTasks + " not scheduled within time");
+        }
     }
 
     // Test that tasks are assigned in the order based on current usage among multiple buckets within a tier
@@ -212,20 +215,23 @@ public class TaskSchedulingServiceTest {
         final TaskSchedulingService schedulingService = getSchedulingService(queue, scheduler, 50L, resultCallback);
         // First, fill 4 VMs, each with 8 cores, with A using 15 cores, B using 6 cores, and C using 11 cores, with
         // memory used in the same ratios
-        for (int i=0; i<15; i++)
+        for (int i = 0; i < 15; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(1, 10, 1)));
-        for (int i=0; i<6; i++)
+        }
+        for (int i = 0; i < 6; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(1, 10, 1)));
-        for (int i=0; i<11; i++)
+        }
+        for (int i = 0; i < 11; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktC, TaskRequestProvider.getTaskRequest(1, 10, 1)));
+        }
         schedulingService.start();
         schedulingService.addLeases(LeaseProvider.getLeases(4, 8, 8000, 1, 1000));
         int numTasks = 32;
         while (numTasks > 0) {
             final QueuableTask task = assignmentResults.poll(2000, TimeUnit.MILLISECONDS);
-            if (task == null)
+            if (task == null) {
                 Assert.fail("Time out waiting for task to get assigned");
-            else {
+            } else {
                 numTasks--;
             }
         }
@@ -236,27 +242,31 @@ public class TaskSchedulingServiceTest {
         queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktC, TaskRequestProvider.getTaskRequest(4, 40, 1)));
         schedulingService.addLeases(LeaseProvider.getLeases(1, 4, 4000, 1, 100));
         QueuableTask task = assignmentResults.poll(1000, TimeUnit.MILLISECONDS);
-        if (task == null)
+        if (task == null) {
             Assert.fail("Time out waiting for just one task to get assigned");
+        }
         Assert.assertEquals(tier1bktB.getBucketName(), task.getQAttributes().getBucketName());
         // queueTask another task for B and make sure it gets launched ahead of A and C after adding one more offer
         queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(4, 40, 1)));
         schedulingService.addLeases(LeaseProvider.getLeases(1, 4, 4000, 1, 100));
         task = assignmentResults.poll(1000, TimeUnit.MILLISECONDS);
-        if (task == null)
+        if (task == null) {
             Assert.fail("Time out waiting for just one task to get assigned");
+        }
         Assert.assertEquals(tier1bktB.getBucketName(), task.getQAttributes().getBucketName());
         // now add another offer and ensure task from C gets launched
         schedulingService.addLeases(LeaseProvider.getLeases(1, 4, 4000, 1, 100));
         task = assignmentResults.poll(1000, TimeUnit.MILLISECONDS);
-        if (task == null)
+        if (task == null) {
             Assert.fail("Time out waiting for just one task to get assigned");
+        }
         Assert.assertEquals(tier1bktC.getBucketName(), task.getQAttributes().getBucketName());
         // a final offer and the task from A should get launched
         schedulingService.addLeases(LeaseProvider.getLeases(1, 4, 4000, 1, 100));
         task = assignmentResults.poll(1000, TimeUnit.MILLISECONDS);
-        if (task == null)
+        if (task == null) {
             Assert.fail("Time out waiting for just one task to get assigned");
+        }
         Assert.assertEquals(tier1bktA.getBucketName(), task.getQAttributes().getBucketName());
     }
 
@@ -284,26 +294,29 @@ public class TaskSchedulingServiceTest {
         };
         final TaskSchedulingService schedulingService = getSchedulingService(queue, scheduler, 50L, resultCallback);
         // fill 4 hosts with tasks from A (tier 0) and tasks from D1 (tier 1)
-        for (int i=0; i<20; i++)
+        for (int i = 0; i < 20; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(1, 10, 1)));
-        for (int i=0; i<12; i++)
+        }
+        for (int i = 0; i < 12; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktD1, TaskRequestProvider.getTaskRequest(1, 10, 1)));
+        }
         schedulingService.start();
         schedulingService.addLeases(LeaseProvider.getLeases(4, 8, 8000, 1, 1000));
         int numTasks = 32;
         while (numTasks > 0) {
             final QueuableTask task = assignmentResults.poll(2000, TimeUnit.MILLISECONDS);
-            if (task == null)
+            if (task == null) {
                 Assert.fail("Time out waiting for task to get assigned");
-            else {
+            } else {
                 numTasks--;
             }
         }
         // now submit a task from A that will only fill part of next offer, and a few tasks from D1 each of which
         // can fill the entire offer. Ensure that only task from A gets launched
         queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(1, 10, 1)));
-        for (int i=0; i<3; i++)
+        for (int i = 0; i < 3; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktD1, TaskRequestProvider.getTaskRequest(4, 40, 1)));
+        }
         schedulingService.addLeases(LeaseProvider.getLeases(1, 4, 4000, 1, 1000));
         final QueuableTask task = assignmentResults.poll(1000, TimeUnit.MILLISECONDS);
         Assert.assertNotNull("Time out waiting for just one task to get assigned", task);
@@ -319,8 +332,9 @@ public class TaskSchedulingServiceTest {
             ref.set(stateCollectionMap);
             latch.countDown();
         });
-        if (!latch.await(1000, TimeUnit.MILLISECONDS))
+        if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
             Assert.fail("Time out waiting for tasks collection");
+        }
         final Map<TaskQueue.TaskState, Collection<QueuableTask>> map = ref.get();
         Assert.assertNotNull(map);
         Assert.assertNotNull(map.get(TaskQueue.TaskState.QUEUED));
@@ -357,15 +371,18 @@ public class TaskSchedulingServiceTest {
         // let us use VMs having 8 cores and 8000 MB of memory each and.
         // create 2 VMs and fill their usage with A filling 2 CPUs at a time with little memory and B filling 2000 MB
         // at a time with very little CPUs.
-        for (int i=0; i<4; i++)
+        for (int i = 0; i < 4; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(3, 1000, 1)));
-        for (int i=0; i<4; i++)
+        }
+        for (int i = 0; i < 4; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(1, 3000, 1)));
+        }
         schedulingService.start();
         List<VirtualMachineLease> leases = LeaseProvider.getLeases(2, 8, 8000, 1, 100);
         schedulingService.addLeases(leases);
-        if (!unqueueTaskResults(8, assignmentResults))
+        if (!unqueueTaskResults(8, assignmentResults)) {
             Assert.fail("Timeout waiting for 16 tasks");
+        }
         // now A is using 12 of the 16 total CPUs in use, and B is using 12,000 of 16,000 total MB, so their
         // dominant resource usage share is equivalent.
         // now submit a task from A to use 1 CPU and 10 MB memory and another task from B to use 1 CPU and 4000 MB memory
@@ -374,23 +391,27 @@ public class TaskSchedulingServiceTest {
         queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(1, 7000, 1)));
         leases = LeaseProvider.getLeases(2, 1, 8, 8000, 1, 100);
         schedulingService.addLeases(leases);
-        if (!unqueueTaskResults(2, assignmentResults))
+        if (!unqueueTaskResults(2, assignmentResults)) {
             Assert.fail("Timeout waiting for 2 task assignments");
+        }
         // now submit a task from just A with 1 CPU, 10 memory, it should get assigned right away
         queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(1, 10, 1)));
-        if (!unqueueTaskResults(1, assignmentResults))
+        if (!unqueueTaskResults(1, assignmentResults)) {
             Assert.fail("Timeout waiting for 1 task assignment");
+        }
         // we now have 3 CPUs and 7020 MB memory being used out of 8 and 8000 respectively
         // now submit 5 tasks from A with 1 CPU, 1 memory each to possibly fill the host as well as a task from B with 1 CPU, 1000 memory.
         // ensure that only the tasks from A get assigned and that the task from B stays queued
-        for (int i=0; i<5; i++)
+        for (int i = 0; i < 5; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(1, 1, 1)));
+        }
         queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(1, 1000, 1)));
         int numTasks = 2;
         while (numTasks > 0) {
             final QueuableTask task = assignmentResults.poll(2000, TimeUnit.MILLISECONDS);
-            if (task == null)
+            if (task == null) {
                 Assert.fail("Timeout waiting for task assignment");
+            }
             Assert.assertEquals(tier1bktA.getBucketName(), task.getQAttributes().getBucketName());
             numTasks--;
         }
@@ -404,8 +425,9 @@ public class TaskSchedulingServiceTest {
                 latch.countDown();
             }
         });
-        if (!latch.await(2000, TimeUnit.MILLISECONDS))
+        if (!latch.await(2000, TimeUnit.MILLISECONDS)) {
             Assert.fail("Can't get confirmation on task from B to be queued");
+        }
         Assert.assertNotNull(bucketRef.get());
         Assert.assertEquals(tier1bktB.getBucketName(), bucketRef.get());
     }
@@ -428,8 +450,9 @@ public class TaskSchedulingServiceTest {
         schedulingService.addLeases(leases);
         final QueuableTask task = QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(2, 2000, 1));
         queue.queueTask(task);
-        if (!latch.await(5, TimeUnit.SECONDS))
+        if (!latch.await(5, TimeUnit.SECONDS)) {
             Assert.fail("Did not assign resources in time");
+        }
         final CountDownLatch latch2 = new CountDownLatch(1);
         final AtomicBoolean found = new AtomicBoolean();
         schedulingService.requestVmCurrentStates(states -> {
@@ -554,16 +577,16 @@ public class TaskSchedulingServiceTest {
         final AtomicBoolean printFailures = new AtomicBoolean();
         Action1<SchedulingResult> resultCallback = schedulingResult -> {
             final List<Exception> exceptions = schedulingResult.getExceptions();
-            if (exceptions != null && !exceptions.isEmpty())
+            if (exceptions != null && !exceptions.isEmpty()) {
                 ref.set(exceptions);
-            else if (!schedulingResult.getResultMap().isEmpty())
+            } else if (!schedulingResult.getResultMap().isEmpty()) {
                 System.out.println("#Assignments: " + schedulingResult.getResultMap().values().iterator().next().getTasksAssigned().size());
-            else if(printFailures.get()) {
+            } else if (printFailures.get()) {
                 final Map<TaskRequest, List<TaskAssignmentResult>> failures = schedulingResult.getFailures();
                 if (!failures.isEmpty()) {
-                    for (Map.Entry<TaskRequest, List<TaskAssignmentResult>> entry: failures.entrySet()) {
+                    for (Map.Entry<TaskRequest, List<TaskAssignmentResult>> entry : failures.entrySet()) {
                         System.out.println("       Failure for " + entry.getKey().getId() + ":");
-                        for(TaskAssignmentResult r: entry.getValue())
+                        for (TaskAssignmentResult r : entry.getValue())
                             System.out.println("            " + r.toString());
                     }
                 }
@@ -575,8 +598,9 @@ public class TaskSchedulingServiceTest {
         final TaskSchedulingService schedulingService = getSchedulingService(queue, scheduler, loopMillis, maxDelay, resultCallback);
         Map<String, SampleLargeNumTasksToInit.Task> uniqueTasks = new HashMap<>();
         for(SampleLargeNumTasksToInit.Task t: runningTasks) {
-            if (!uniqueTasks.containsKey(t.getBucket()))
+            if (!uniqueTasks.containsKey(t.getBucket())) {
                 uniqueTasks.put(t.getBucket(), t);
+            }
             schedulingService.initializeRunningTask(SampleLargeNumTasksToInit.toQueuableTask(t), t.getHost());
         }
         schedulingService.start();
@@ -602,9 +626,9 @@ public class TaskSchedulingServiceTest {
                 if (e instanceof TaskQueueMultiException) {
                     for (Exception ee : ((TaskQueueMultiException) e).getExceptions())
                         ee.printStackTrace();
-                }
-                else
+                } else {
                     e.printStackTrace();
+                }
             }
         }
         Assert.assertNull(exceptions);
@@ -621,9 +645,9 @@ public class TaskSchedulingServiceTest {
         Action1<SchedulingResult> resultCallback = schedulingResult -> {
             final List<Exception> exceptions = schedulingResult.getExceptions();
             final Map<String, VMAssignmentResult> resultMap = schedulingResult.getResultMap();
-            if (exceptions != null && !exceptions.isEmpty())
+            if (exceptions != null && !exceptions.isEmpty()) {
                 ref.set(exceptions);
-            else if (!resultMap.isEmpty()) {
+            } else if (!resultMap.isEmpty()) {
                 resultMap.forEach((key, value) -> value.getTasksAssigned().forEach(t -> assignedTaskIds.get().add(t.getTaskId())));
             }
             schedulingResult.getFailures().forEach((t, r) -> failedTaskIds.get().add(t.getId()));
@@ -684,10 +708,11 @@ public class TaskSchedulingServiceTest {
     private boolean unqueueTaskResults(int numTasks, BlockingQueue<QueuableTask> assignmentResults) throws InterruptedException {
         while (numTasks > 0) {
             final QueuableTask task = assignmentResults.poll(2000, TimeUnit.MILLISECONDS);
-            if (task == null)
+            if (task == null) {
                 return false;
-            else
+            } else {
                 numTasks--;
+            }
         }
         return true;
     }

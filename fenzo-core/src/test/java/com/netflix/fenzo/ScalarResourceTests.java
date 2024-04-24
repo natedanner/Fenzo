@@ -77,8 +77,9 @@ public class ScalarResourceTests {
         final TaskScheduler scheduler = getScheduler();
         final double scalarsOnHost = 4.0;
         final List<TaskRequest> tasks = new ArrayList<>();
-        for (int i = 0; i < scalarsOnHost + 1; i++)
+        for (int i = 0; i < scalarsOnHost + 1; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(null, 1, 100, 1, 1, 1, null, null, null, Collections.singletonMap("gpu", 1.0)));
+        }
         final VirtualMachineLease host1 = LeaseProvider.getLeaseOffer("host1", scalarsOnHost*2.0, scalarsOnHost*2000.0, 100, 1024,
                 Collections.singletonList(new VirtualMachineLease.Range(1, 10)), null, Collections.singletonMap("gpu", scalarsOnHost));
         final SchedulingResult result = scheduler.scheduleOnce(tasks, Collections.singletonList(host1));
@@ -93,8 +94,9 @@ public class ScalarResourceTests {
         final TaskScheduler scheduler = getScheduler();
         final double scalarsOnHost = 4.0;
         final List<TaskRequest> tasks = new ArrayList<>();
-        for (int i = 0; i < scalarsOnHost * 2; i++)
+        for (int i = 0; i < scalarsOnHost * 2; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(null, 1, 100, 1, 1, 1, null, null, null, Collections.singletonMap("gpu", 1.0)));
+        }
         final VirtualMachineLease host1 = LeaseProvider.getLeaseOffer("host1", scalarsOnHost, scalarsOnHost*1000.0, 100, 1024,
                 Collections.singletonList(new VirtualMachineLease.Range(1, 10)), null, Collections.singletonMap("gpu", scalarsOnHost));
         final VirtualMachineLease host2 = LeaseProvider.getLeaseOffer("host2", scalarsOnHost, scalarsOnHost*1000.0, 100, 1024,
@@ -119,8 +121,9 @@ public class ScalarResourceTests {
         scalarReqs.put("gpu", 1.0);
         scalarReqs.put("foo", 1.0);
         final List<TaskRequest> tasks = new ArrayList<>();
-        for(int i=0; i<scalars1OnHost*2; i++)
+        for (int i = 0; i < scalars1OnHost * 2; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(null, 1, 100, 1, 1, 1, null, null, null, scalarReqs));
+        }
         final Map<String, Double> scalarResources = new HashMap<>();
         scalarResources.put("gpu", scalars1OnHost);
         scalarResources.put("foo", scalars2OnHost);

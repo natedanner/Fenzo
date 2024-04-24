@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
 abstract class BaseShortfallEvaluator implements ShortfallEvaluator {
     private static final long TOO_OLD_THRESHOLD_MILLIS = 10 * 60000; // should this be configurable?
 
-    private volatile Func1<QueuableTask, List<String>> taskToClustersGetter = null;
+    private volatile Func1<QueuableTask, List<String>> taskToClustersGetter;
     private final Map<String, Long> requestedForTasksSet = new HashMap<>();
 
-    protected TaskSchedulingService schedulingService = null;
+    protected TaskSchedulingService schedulingService;
 
     @Override
     public void setTaskToClustersGetter(Func1<QueuableTask, List<String>> getter) {
@@ -54,14 +54,16 @@ abstract class BaseShortfallEvaluator implements ShortfallEvaluator {
         long tooOld = System.currentTimeMillis() - TOO_OLD_THRESHOLD_MILLIS;
         Set<String> tasks = new HashSet<>(requestedForTasksSet.keySet());
         for (String t : tasks) {
-            if (requestedForTasksSet.get(t) < tooOld)
+            if (requestedForTasksSet.get(t) < tooOld) {
                 requestedForTasksSet.remove(t);
+            }
         }
     }
 
     protected List<TaskRequest> filterFailedTasks(Collection<TaskRequest> original) {
-        if (original == null || original.isEmpty())
+        if (original == null || original.isEmpty()) {
             return Collections.emptyList();
+        }
         long now = System.currentTimeMillis();
         return original.stream()
                 .filter(t -> requestedForTasksSet.putIfAbsent(t.getId(), now) == null)
@@ -74,10 +76,11 @@ abstract class BaseShortfallEvaluator implements ShortfallEvaluator {
             for (TaskRequest r: requests) {
                 for (String k : attrKeys) {
                     if (matchesTask(r, k)) {
-                        if (shortfallMap.get(k) == null)
+                        if (shortfallMap.get(k) == null) {
                             shortfallMap.put(k, 1);
-                        else
+                        } else {
                             shortfallMap.put(k, shortfallMap.get(k) + 1);
+                        }
                     }
                 }
             }
@@ -86,13 +89,15 @@ abstract class BaseShortfallEvaluator implements ShortfallEvaluator {
     }
 
     private boolean matchesTask(TaskRequest r, String k) {
-        if (!(r instanceof QueuableTask) || taskToClustersGetter == null)
+        if (!(r instanceof QueuableTask) || taskToClustersGetter == null) {
             return true;
+        }
         final List<String> strings = taskToClustersGetter.call((QueuableTask) r);
         if (strings != null && !strings.isEmpty()) {
             for (String s : strings)
-                if (k.equals(s))
+                if (k.equals(s)) {
                     return true;
+                }
             return false; // doesn't match
         }
         // matches anything

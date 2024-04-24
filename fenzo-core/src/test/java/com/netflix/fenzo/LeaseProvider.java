@@ -50,7 +50,7 @@ public class LeaseProvider {
         final long offeredTime = System.currentTimeMillis();
         final String id = UUID.randomUUID().toString();
         final String vmId = UUID.randomUUID().toString();
-        final Map<String, Double> scalars = scalarResources==null? Collections.<String, Double>emptyMap() : scalarResources;
+        final Map<String, Double> scalars = scalarResources==null? Collections.emptyMap() : scalarResources;
         return new VirtualMachineLease() {
             @Override
             public String getId() {
@@ -157,8 +157,9 @@ public class LeaseProvider {
     public static List<VirtualMachineLease> getLeases(int hostSuffixBegin, int numHosts, double cpus, double memory,
                                                double network, List<VirtualMachineLease.Range> ports) {
         List<VirtualMachineLease> leases = new ArrayList<>(numHosts);
-        for(int i=hostSuffixBegin; i<(hostSuffixBegin+numHosts); i++)
-            leases.add(getLeaseOffer("host"+i, cpus, memory, network, ports));
+        for (int i = hostSuffixBegin; i < (hostSuffixBegin + numHosts); i++) {
+            leases.add(getLeaseOffer("host" + i, cpus, memory, network, ports));
+        }
         return leases;
     }
 
@@ -175,11 +176,13 @@ public class LeaseProvider {
                     VirtualMachineLease.Range split = new VirtualMachineLease.Range(range.getBeg(), consumePort-1);
                     result.add(split);
                 }
-                if(consumePort<range.getEnd())
-                    result.add(new VirtualMachineLease.Range(consumePort+1, range.getEnd()));
+                if (consumePort < range.getEnd()) {
+                    result.add(new VirtualMachineLease.Range(consumePort + 1, range.getEnd()));
+                }
             }
-            for(int j=i+1; j<orig.size(); j++)
+            for (int j = i + 1; j < orig.size(); j++) {
                 result.add(orig.get(j));
+            }
             return result;
         }
         throw new IllegalArgumentException("Unexpected to not find " + consumePort + " within the ranges provided");

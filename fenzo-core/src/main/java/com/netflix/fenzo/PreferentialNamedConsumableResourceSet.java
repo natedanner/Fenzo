@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class PreferentialNamedConsumableResourceSet {
 
-    final static String attributeName = "ResourceSet";
+    static final String attributeName = "ResourceSet";
 
     private static String getResNameVal(String name, TaskRequest request) {
         final Map<String, TaskRequest.NamedResourceSetRequest> customNamedResources = request.getCustomNamedResources();
@@ -93,10 +93,10 @@ public class PreferentialNamedConsumableResourceSet {
         private final String hostname;
         private final int index;
         private final String attrName;
-        private String resName=null;
+        private String resName;
         private final int limit;
         private final Map<String, TaskRequest.NamedResourceSetRequest> usageBy;
-        private int usedSubResources=0;
+        private int usedSubResources;
 
         PreferentialNamedConsumableResource(String hostname, int i, String attrName, int limit) {
             this.hostname = hostname;
@@ -172,21 +172,24 @@ public class PreferentialNamedConsumableResourceSet {
         }
 
         void consume(String assignedResName, TaskRequest request) {
-            if(usageBy.get(request.getId()) != null)
+            if (usageBy.get(request.getId()) != null) {
                 return; // already consumed
-            if(resName!=null && !resName.equals(assignedResName))
+            }
+            if (resName != null && !resName.equals(assignedResName)) {
                 throw new IllegalStateException(this.getClass().getName() + " already consumed by " + resName +
-                        ", can't consume for " + assignedResName);
-            if(resName == null) {
+                                   ", can't consume for " + assignedResName);
+            }
+            if (resName == null) {
                 resName = assignedResName;
                 usageBy.clear();
             }
-            final TaskRequest.NamedResourceSetRequest setRequest = request.getCustomNamedResources()==null?
-                    null : request.getCustomNamedResources().get(attrName);
-            double subResNeed = setRequest==null? 0.0 : setRequest.getNumSubResources();
-            if(usedSubResources + subResNeed > limit)
+            final TaskRequest.NamedResourceSetRequest setRequest = request.getCustomNamedResources() == null ?
+                               null : request.getCustomNamedResources().get(attrName);
+            double subResNeed = setRequest == null ? 0.0 : setRequest.getNumSubResources();
+            if (usedSubResources + subResNeed > limit) {
                 throw new RuntimeException(this.getClass().getName() + " already consumed for " + resName +
-                        " up to the limit of " + limit);
+                                   " up to the limit of " + limit);
+            }
             usageBy.put(request.getId(), setRequest);
             usedSubResources += subResNeed;
         }
@@ -197,11 +200,13 @@ public class PreferentialNamedConsumableResourceSet {
                 return false;
             }
             final TaskRequest.NamedResourceSetRequest removed = usageBy.remove(request.getId());
-            if(removed == null)
+            if (removed == null) {
                 return false;
+            }
             usedSubResources -= removed.getNumSubResources();
-            if(usageBy.isEmpty())
+            if (usageBy.isEmpty()) {
                 resName = null;
+            }
             return true;
         }
     }
@@ -213,8 +218,9 @@ public class PreferentialNamedConsumableResourceSet {
     public PreferentialNamedConsumableResourceSet(String hostname, String name, int val0, int val1) {
         this.name = name;
         usageBy = new ArrayList<>(val0);
-        for(int i=0; i<val0; i++)
+        for (int i = 0; i < val0; i++) {
             usageBy.add(new PreferentialNamedConsumableResource(hostname, i, name, val1));
+        }
     }
 
     public String getName() {
@@ -245,10 +251,11 @@ public class PreferentialNamedConsumableResourceSet {
                 for(PreferentialNamedConsumableResourceSet.ConsumeResult consumeResult: consumedNamedResources) {
                     if(name.equals(consumeResult.getAttrName())) {
                         final int index = consumeResult.getIndex();
-                        if(index < 0 || index > usageBy.size())
+                        if (index < 0 || index > usageBy.size()) {
                             throw new IllegalStateException("Illegal assignment of namedResource " + name +
-                                    ": has " + usageBy.size() + " resource sets, can't assign to index " + index
+                                               ": has " + usageBy.size() + " resource sets, can't assign to index " + index
                             );
+                        }
                         usageBy.get(index).consume(consumeResult.getResName(), request);
                     }
                 }
@@ -266,16 +273,18 @@ public class PreferentialNamedConsumableResourceSet {
         double bestFitness=0.0;
         for(PreferentialNamedConsumableResource r: usageBy) {
             double f = r.getFitness(request, evaluator);
-            if(f == 0.0)
+            if (f == 0.0) {
                 continue;
+            }
             if(bestFitness < f) {
                 best = r;
                 bestFitness = f;
             }
         }
         if(!skipConsume) {
-            if (best == null)
+            if (best == null) {
                 throw new RuntimeException("Unexpected to have no availability for job " + request.getId() + " for consumable resource " + name);
+            }
             best.consume(request);
         }
         return new ConsumeResult(
@@ -288,8 +297,9 @@ public class PreferentialNamedConsumableResourceSet {
 
     boolean release(TaskRequest request) {
         for(PreferentialNamedConsumableResource r: usageBy)
-            if(r.release(request))
+            if (r.release(request)) {
                 return true;
+            }
         return false;
     }
 

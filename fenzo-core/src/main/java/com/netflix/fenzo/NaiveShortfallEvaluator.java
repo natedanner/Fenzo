@@ -58,9 +58,9 @@ class NaiveShortfallEvaluator extends BaseShortfallEvaluator {
         if (vmGroupNames != null && failures != null && !failures.isEmpty()) {
             reset();
             return adjustAgentScaleUp(fillShortfallMap(vmGroupNames, filterFailedTasks(failures)), autoScaleRules);
-        }
-        else
+        } else {
             return Collections.emptyMap();
+        }
     }
 
     private Map<String, Integer> adjustAgentScaleUp(Map<String, Integer> shortfallMap, AutoScaleRules autoScaleRules) {

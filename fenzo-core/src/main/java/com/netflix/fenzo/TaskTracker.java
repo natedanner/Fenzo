@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class TaskTracker {
 
-    static class TaskGroupUsage implements ResAllocs {
+    static final class TaskGroupUsage implements ResAllocs {
         private final String taskGroupName;
         private double cores=0.0;
         private double memory=0.0;
@@ -134,7 +134,7 @@ public class TaskTracker {
     private final Map<String, ActiveTask> runningTasks = new HashMap<>();
     private final Map<String, ActiveTask> assignedTasks = new HashMap<>();
     private final Map<String, TaskGroupUsage> taskGroupUsages = new HashMap<>();
-    private UsageTrackedQueue usageTrackedQueue = null;
+    private UsageTrackedQueue usageTrackedQueue;
 
     // package scoped
     TaskTracker() {
@@ -148,13 +148,14 @@ public class TaskTracker {
         final boolean added = runningTasks.put(request.getId(), new ActiveTask(request, avm)) == null;
         if(added) {
             addUsage(request);
-            if (usageTrackedQueue != null && request instanceof QueuableTask)
+            if (usageTrackedQueue != null && request instanceof QueuableTask) {
                 try {
-                    usageTrackedQueue.launchTask((QueuableTask)request);
+                    usageTrackedQueue.launchTask((QueuableTask) request);
                 } catch (TaskQueueException e) {
                     // We don't expect this to happen since we call this only outside scheduling iteration
                     logger.warn("Unexpected: " + e.getMessage());
                 }
+            }
         }
         return added;
     }
@@ -164,12 +165,13 @@ public class TaskTracker {
         if(removed != null) {
             final TaskRequest task = removed.getTaskRequest();
             final TaskGroupUsage usage = taskGroupUsages.get(task.taskGroupName());
-            if(usage==null)
+            if (usage == null) {
                 logger.warn("Unexpected to not find usage for task group " + task.taskGroupName() +
-                        " to unqueueTask usage of task " + task.getId());
-            else
+                                   " to unqueueTask usage of task " + task.getId());
+            } else {
                 usage.subtractUsage(task);
-            if (usageTrackedQueue != null && removed.getTaskRequest() instanceof QueuableTask)
+            }
+            if (usageTrackedQueue != null && removed.getTaskRequest() instanceof QueuableTask) {
                 try {
                     final QueuableTask queuableTask = (QueuableTask) removed.getTaskRequest();
                     usageTrackedQueue.removeTask(queuableTask.getId(), queuableTask.getQAttributes());
@@ -177,6 +179,7 @@ public class TaskTracker {
                     // We don't expect this to happen since we call this only outside scheduling iteration
                     logger.warn("Unexpected: " + e.getMessage());
                 }
+            }
         }
         return removed != null;
     }
@@ -189,13 +192,14 @@ public class TaskTracker {
         final boolean assigned = assignedTasks.put(request.getId(), new ActiveTask(request, avm)) == null;
         if(assigned) {
             addUsage(request);
-            if (usageTrackedQueue != null && request instanceof QueuableTask)
+            if (usageTrackedQueue != null && request instanceof QueuableTask) {
                 try {
                     usageTrackedQueue.assignTask((QueuableTask) request);
                 } catch (TaskQueueException e) {
                     // We don't expect this to happen since we call this only from within a scheduling iteration
                     logger.warn("Unexpected: " + e.getMessage());
                 }
+            }
         }
         return assigned;
     }
@@ -224,7 +228,8 @@ public class TaskTracker {
     }
 
     void setTotalResources(Map<VMResource, Double> totalResourcesMap) {
-        if (usageTrackedQueue != null)
+        if (usageTrackedQueue != null) {
             usageTrackedQueue.setTotalResources(totalResourcesMap);
+        }
     }
 }

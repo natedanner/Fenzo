@@ -35,7 +35,7 @@ public class BinPackingFitnessCalculators {
      * A CPU bin packing fitness calculator. This fitness calculator has the effect of assigning a task to a
      * host that has the least number of available CPUs that are sufficient to fit the task.
      */
-    public final static VMTaskFitnessCalculator cpuBinPacker = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator cpuBinPacker = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "CPUBinPacker";
@@ -62,7 +62,7 @@ public class BinPackingFitnessCalculators {
      * A memory bin packing fitness calcualtor. This fitness calculator has the effect of assigning a task to a
      * host that has the least amount of available memory that is sufficient to fit the task.
      */
-    public final static VMTaskFitnessCalculator memoryBinPacker = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator memoryBinPacker = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "MemoryBinPacker";
@@ -89,7 +89,7 @@ public class BinPackingFitnessCalculators {
      * A bin packing fitness calculator that achieves both CPU and Memory bin packing with equal weights to
      * both goals.
      */
-    public final static VMTaskFitnessCalculator cpuMemBinPacker = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator cpuMemBinPacker = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "CPUAndMemoryBinPacker";
@@ -106,7 +106,7 @@ public class BinPackingFitnessCalculators {
      * A network bandwidth bin packing fitness calculator. This fitness calculator has the effect of assigning a
      * task to a host that has the least amount of available network bandwidth that is sufficient for the task.
      */
-    public final static VMTaskFitnessCalculator networkBinPacker = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator networkBinPacker = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "NetworkBinPacker";
@@ -133,7 +133,7 @@ public class BinPackingFitnessCalculators {
      * A fitness calculator that achieves CPU, Memory, and network bandwidth bin packing with equal weights to
      * each of the three goals.
      */
-    public final static VMTaskFitnessCalculator cpuMemNetworkBinPacker = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator cpuMemNetworkBinPacker = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "CPUAndMemoryAndNetworkBinPacker";
@@ -153,12 +153,14 @@ public class BinPackingFitnessCalculators {
         double totalRes = leaseResourceGetter.call(targetVM.getCurrAvailableResources());
         Iterator<TaskRequest> iterator = targetVM.getRunningTasks().iterator();
         double oldJobsTotal=0.0;
-        while(iterator.hasNext())
+        while (iterator.hasNext()) {
             oldJobsTotal += taskResourceGetter.call(iterator.next());
+        }
         double usedResource = taskResourceGetter.call(request);
         Iterator<TaskAssignmentResult> taskAssignmentResultIterator = targetVM.getTasksCurrentlyAssigned().iterator();
-        while(taskAssignmentResultIterator.hasNext())
+        while (taskAssignmentResultIterator.hasNext()) {
             usedResource += taskResourceGetter.call(taskAssignmentResultIterator.next().getRequest());
+        }
         totalRes += oldJobsTotal;
         usedResource += oldJobsTotal;
         return usedResource / totalRes;

@@ -33,7 +33,7 @@ import java.util.*;
 
 public class ConstraintsTests {
 
-    private final static String zoneAttrName="Zone";
+    private static final String zoneAttrName="Zone";
     private final int numZones=3;
     Map<String, Protos.Attribute> attributesA = new HashMap<>();
     Map<String, Protos.Attribute> attributesB = new HashMap<>();
@@ -74,9 +74,10 @@ public class ConstraintsTests {
                         return aDouble > 1.0;
                     }
                 });
-        if(useBinPacking)
+        if (useBinPacking) {
             builder = builder
-                    .withFitnessCalculator(BinPackingFitnessCalculators.cpuMemBinPacker);
+                               .withFitnessCalculator(BinPackingFitnessCalculators.cpuMemBinPacker);
+        }
         return builder.build();
     }
 
@@ -110,7 +111,7 @@ public class ConstraintsTests {
     @Test
     public void testHardConstraint2() throws Exception {
         // first, make sure that when not using zone constraint, 3 tasks land on the same zone
-        Set<String> zonesUsed = getZonesUsed(new HashMap<String, TaskRequest>(), new HashMap<String, Set<String>>(), null, null);
+        Set<String> zonesUsed = getZonesUsed(new HashMap<>(), new HashMap<>(), null, null);
         Assert.assertEquals("Without zone constraints expecting 3 tasks to land on same zone", 1, zonesUsed.size());
         // now test with zone constraint and make sure they go on to one zone each
         Map<String, TaskRequest> taskMap = new HashMap<>();
@@ -227,8 +228,9 @@ public class ConstraintsTests {
         });
         List<TaskRequest> tasks = new ArrayList<>();
         // First, create 5 tasks without unique host constraint
-        for(int i=0; i<5; i++)
+        for (int i = 0; i < 5; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(1, 1000, 1));
+        }
         TaskScheduler taskScheduler = getTaskScheduler();
         List<VirtualMachineLease> leases = LeaseProvider.getLeases(5, 8, 8000, 1, 10);
         Map<String, VMAssignmentResult> resultMap = taskScheduler.scheduleOnce(tasks, leases).getResultMap();
@@ -252,13 +254,15 @@ public class ConstraintsTests {
         Assert.assertEquals("Tasks without unique host constraints should've gotten assigned", tasks.size(), numAssigned);
         // now test with tasks with unique host constraint
         tasks.clear();
-        for(int i=0; i<5; i++)
+        for (int i = 0; i < 5; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(1, 1000, 1, Arrays.asList(uniqueHostConstraint), null));
+        }
         for(TaskRequest r: tasks) {
             taskToCoTasksMap.put(r.getId(), new HashSet<String>());
             for(TaskRequest rr: tasks)
-                if(!rr.getId().equals(r.getId()))
+                if (!rr.getId().equals(r.getId())) {
                     taskToCoTasksMap.get(r.getId()).add(rr.getId());
+                }
         }
         resultMap = taskScheduler.scheduleOnce(tasks, leases).getResultMap();
         Assert.assertNotNull(resultMap);
@@ -295,10 +299,11 @@ public class ConstraintsTests {
         for(VMAssignmentResult result: resultMap.values()) {
             Assert.assertEquals(1, result.getTasksAssigned().size());
             TaskAssignmentResult tResult = result.getTasksAssigned().iterator().next();
-            if(tResult.getRequest().getId().equals(noCtask.getId()))
+            if (tResult.getRequest().getId().equals(noCtask.getId())) {
                 Assert.assertEquals("Task with no constraint should've landed on the already used host", usedHostname, result.getHostname());
-            else
+            } else {
                 Assert.assertFalse(usedHostname.equals(result.getHostname()));
+            }
         }
     }
 
@@ -402,10 +407,11 @@ public class ConstraintsTests {
         Assert.assertEquals(2, resultMap.size());
         for(VMAssignmentResult result: resultMap.values()) {
             for(TaskAssignmentResult r: result.getTasksAssigned()) {
-                if(r.getRequest().getId().equals(t1.getId()))
+                if (r.getRequest().getId().equals(t1.getId())) {
                     Assert.assertEquals(threeVMs.get(0).hostname(), result.getHostname());
-                else if(r.getRequest().getId().equals(t2.getId()))
+                } else if (r.getRequest().getId().equals(t2.getId())) {
                     Assert.assertEquals(threeVMs.get(1).hostname(), result.getHostname());
+                }
             }
         }
     }
@@ -448,11 +454,13 @@ public class ConstraintsTests {
                                             ConstraintEvaluator hardConstraint, VMTaskFitnessCalculator softConstraint) {
         List<TaskRequest> tasks = new ArrayList<>(3);
         List<ConstraintEvaluator> constraintEvaluators = new ArrayList<>(1);
-        if(hardConstraint!=null)
+        if (hardConstraint != null) {
             constraintEvaluators.add(hardConstraint);
+        }
         List<VMTaskFitnessCalculator> softConstraints = new ArrayList<>();
-        if(softConstraint!=null)
+        if (softConstraint != null) {
             softConstraints.add(softConstraint);
+        }
         for(int i=0; i<numZones; i++) {
             TaskRequest t = TaskRequestProvider.getTaskRequest(1, 1000, 1, constraintEvaluators, softConstraints);
             taskMap.put(t.getId(), t);

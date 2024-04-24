@@ -58,7 +58,7 @@ public class WeightedAverageFitnessCalculator implements VMTaskFitnessCalculator
             if (score == 0.0) {
                 return score;
             }
-            totalWeightedScores += (score * calculator.getWeight());
+            totalWeightedScores += score * calculator.getWeight();
             totalWeights += calculator.getWeight();
         }
         return totalWeightedScores / totalWeights;

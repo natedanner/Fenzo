@@ -111,7 +111,7 @@ public class VMLeaseObject implements VirtualMachineLease {
     }
     @Override
     public List<Range> portRanges() {
-        return rangeResources.get("ports")==null? Collections.<Range>emptyList() : rangeResources.get("ports");
+        return rangeResources.get("ports")==null? Collections.emptyList() : rangeResources.get("ports");
     }
     @Override
     public Map<String, Protos.Attribute> getAttributeMap() {

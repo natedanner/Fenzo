@@ -42,13 +42,13 @@ class Tier implements UsageTrackedQueue {
     private TierSla tierSla;
     private final ResUsage totals;
 
-    private ResAllocs tierResources = null;
+    private ResAllocs tierResources;
     private ResAllocs effectiveUsedResources;
-    private ResAllocs remainingResources = null;
+    private ResAllocs remainingResources;
     private final Map<String, ResAllocs> lastEffectiveUsedResources = new HashMap<>();
 
     private final SortedBuckets sortedBuckets;
-    private Map<VMResource, Double> currTotalResourcesMap = new HashMap<>();
+    private final Map<VMResource, Double> currTotalResourcesMap = new HashMap<>();
     private final BiFunction<Integer, String, Double> allocsShareGetter;
 
     Tier(int tierNumber, BiFunction<Integer, String, Double> allocsShareGetter) {
@@ -92,8 +92,9 @@ class Tier implements UsageTrackedQueue {
     }
 
     private QueueBucket getOrCreateBucket(QueuableTask t) {
-        if (t == null)
+        if (t == null) {
             throw new NullPointerException();
+        }
         return getOrCreateBucket(t.getQAttributes().getBucketName());
     }
 
@@ -148,8 +149,9 @@ class Tier implements UsageTrackedQueue {
         // then adding the bucket back into the sortedBuckets. It will then fall into its right new place.
         // This operation therefore takes time complexity of O(log N).
         final QueueBucket bucket = sortedBuckets.remove(t.getQAttributes().getBucketName());
-        if (bucket == null)
+        if (bucket == null) {
             throw new TaskQueueException("Invalid to not find bucket to assign task id=" + t.getId());
+        }
         try {
             bucket.assignTask(t);
             addUsage(bucket, t);
@@ -164,8 +166,9 @@ class Tier implements UsageTrackedQueue {
         // We do this by removing the bucket from the sortedBuckets, launching the task in the bucket,
         // then adding the bucket back into the sortedBuckets. It will then fall into its right new place.
         // This operation therefore takes time complexity of O(log N).
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug("Adding " + t.getId() + ": to ordered buckets: " + getSortedListString());
+        }
         final String bucketName = t.getQAttributes().getBucketName();
         QueueBucket bucket = sortedBuckets.remove(bucketName);
         if (bucket == null) {
@@ -183,8 +186,9 @@ class Tier implements UsageTrackedQueue {
     }
 
     private void verifySortedBuckets() throws TaskQueueException {
-        if (sortedBuckets.getSortedList().isEmpty())
+        if (sortedBuckets.getSortedList().isEmpty()) {
             return;
+        }
         List<QueueBucket> list = new ArrayList<>(sortedBuckets.getSortedList());
         if (list.size() > 1) {
             QueueBucket prev = list.get(0);
@@ -203,8 +207,9 @@ class Tier implements UsageTrackedQueue {
         // removing a task can change the resource usage and therefore the sorting order of queues. So, we take the
         // same approach as in launchTask() above - remove the bucket and readd to keep sorting order updated.
         final QueueBucket bucket = sortedBuckets.remove(qAttributes.getBucketName());
-        if (bucket == null)
+        if (bucket == null) {
             return null;
+        }
         final QueuableTask removed;
         try {
             removed = bucket.removeTask(id, qAttributes);
@@ -212,8 +217,9 @@ class Tier implements UsageTrackedQueue {
                 removeUsage(bucket, removed);
             }
         } finally {
-            if (bucket.size() > 0 || (tierSla != null && tierSla.getBucketAllocs(bucket.getName()) != null))
+            if (bucket.size() > 0 || (tierSla != null && tierSla.getBucketAllocs(bucket.getName()) != null)) {
                 sortedBuckets.add(bucket);
+            }
         }
         return removed;
     }
@@ -251,8 +257,9 @@ class Tier implements UsageTrackedQueue {
     @Override
     public void setTaskReadyTime(String taskId, QAttributes qAttributes, long when) throws TaskQueueException {
         final QueueBucket bucket = sortedBuckets.get(qAttributes.getBucketName());
-        if (bucket != null)
+        if (bucket != null) {
             bucket.setTaskReadyTime(taskId, qAttributes, when);
+        }
     }
 
     @Override
@@ -306,14 +313,16 @@ class Tier implements UsageTrackedQueue {
     }
 
     private boolean totalResMapChanged(Map<VMResource, Double> currTotalResourcesMap, Map<VMResource, Double> totalResourcesMap) {
-        if (currTotalResourcesMap.size() != totalResourcesMap.size())
+        if (currTotalResourcesMap.size() != totalResourcesMap.size()) {
             return true;
+        }
         Set<VMResource> curr = new HashSet<>(currTotalResourcesMap.keySet());
         for (VMResource r : totalResourcesMap.keySet()) {
             final Double c = currTotalResourcesMap.get(r);
             final Double n = totalResourcesMap.get(r);
-            if ((c == null && n != null) || (c != null && n == null) || (n != null && !n.equals(c)))
+            if ((c == null && n != null) || (c != null && n == null) || (n != null && !n.equals(c))) {
                 return true;
+            }
             curr.remove(r);
         }
         return !curr.isEmpty();

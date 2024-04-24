@@ -28,7 +28,7 @@ public interface ScaleDownConstraintEvaluator<CONTEXT> {
     /**
      * Evaluation result.
      */
-    class Result<CONTEXT> {
+    final class Result<CONTEXT> {
         private final double score;
         private final Optional<CONTEXT> context;
 

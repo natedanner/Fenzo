@@ -72,7 +72,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *     </LI>
  * </UL>
  */
-public class TaskSchedulingService {
+public final class TaskSchedulingService {
 
     private static class RemoveTaskRequest {
         private final String taskId;
@@ -86,7 +86,7 @@ public class TaskSchedulingService {
         }
     }
 
-    private static class SetReadyTimeRequest {
+    private static final class SetReadyTimeRequest {
         private final String taskId;
         private final QAttributes qAttributes;
         private final long when;
@@ -114,7 +114,7 @@ public class TaskSchedulingService {
     private final BlockingQueue<Action1<List<VirtualMachineCurrentState>>> vmCurrStateRequest = new LinkedBlockingQueue<>(10);
     private final AtomicLong lastSchedIterationAt = new AtomicLong();
     private final long maxSchedIterDelay;
-    private volatile Func1<QueuableTask, List<String>> taskToClusterAutoScalerMapGetter = null;
+    private volatile Func1<QueuableTask, List<String>> taskToClusterAutoScalerMapGetter;
 
     private TaskSchedulingService(Builder builder) {
         taskScheduler = builder.taskScheduler;
@@ -196,10 +196,11 @@ public class TaskSchedulingService {
                             final String grp = hostnameToGrpMap.get(h);
                             if (grp != null) {
                                 Integer count = result.get(grp);
-                                if (count == null)
+                                if (count == null) {
                                     result.put(grp, 1);
-                                else
+                                } else {
                                     result.put(grp, count + 1);
+                                }
                             }
                         }
                     }
@@ -211,17 +212,18 @@ public class TaskSchedulingService {
                         } else {
                             for (Map.Entry<TaskRequest, List<TaskAssignmentResult>> entry: failures.entrySet()) {
                                 final List<TaskAssignmentResult> tars = entry.getValue();
-                                if (tars == null || tars.isEmpty())
+                                if (tars == null || tars.isEmpty()) {
                                     logger.debug("No pseudo assignment failures for task " + entry.getKey());
-                                else {
+                                } else {
                                     StringBuilder b = new StringBuilder("Pseudo assignment failures for task ").append(entry.getKey()).append(": ");
-                                    for (TaskAssignmentResult r: tars) {
+                                    for (TaskAssignmentResult r : tars) {
                                         b.append("HOST: ").append(r.getHostname()).append(":");
                                         final List<AssignmentFailure> afs = r.getFailures();
-                                        if (afs != null && !afs.isEmpty())
+                                        if (afs != null && !afs.isEmpty()) {
                                             afs.forEach(af -> b.append(af.getMessage()).append("; "));
-                                        else
+                                        } else {
                                             b.append("None").append(";");
+                                        }
                                     }
                                     logger.debug(b.toString());
                                 }
@@ -265,8 +267,9 @@ public class TaskSchedulingService {
             if (qModified || newLeaseExists || doNextIteration()) {
                 taskScheduler.setTaskToClusterAutoScalerMapGetter(taskToClusterAutoScalerMapGetter);
                 lastSchedIterationAt.set(System.currentTimeMillis());
-                if (preHook != null)
+                if (preHook != null) {
                     preHook.call();
+                }
                 List<VirtualMachineLease> currentLeases = new ArrayList<>();
                 leaseBlockingQueue.drainTo(currentLeases);
                 final SchedulingResult schedulingResult = taskScheduler.scheduleOnce(taskQueue, currentLeases);
@@ -308,8 +311,9 @@ public class TaskSchedulingService {
                     // shouldn't happen since we're calling outside of scheduling iteration
                     logger.warn("Unexpected to get exception outside of scheduling iteration: " + e1.getMessage(), e1);
                 }
-                if (r.hostname != null)
+                if (r.hostname != null) {
                     taskScheduler.getTaskUnAssigner().call(r.taskId, r.hostname);
+                }
             }
         }
     }
@@ -331,22 +335,25 @@ public class TaskSchedulingService {
     private void doPendingActions() {
         final Action1<Map<TaskQueue.TaskState, Collection<QueuableTask>>> action = taskMapRequest.poll();
         try {
-            if (action != null)
+            if (action != null) {
                 action.call(taskQueue.getAllTasks());
+            }
         } catch (TaskQueueException e) {
             logger.warn("Unexpected when trying to get task list: " + e.getMessage(), e);
         }
         final Action1<Map<String, Map<VMResource, Double[]>>> rsAction = resStatusRequest.poll();
         try {
-            if (rsAction != null)
+            if (rsAction != null) {
                 rsAction.call(taskScheduler.getResourceStatusIntl());
+            }
         } catch (IllegalStateException e) {
             logger.warn("Unexpected when trying to get resource status: " + e.getMessage(), e);
         }
         final Action1<List<VirtualMachineCurrentState>> vmcAction = vmCurrStateRequest.poll();
         try {
-            if (vmcAction != null)
+            if (vmcAction != null) {
                 vmcAction.call(taskScheduler.getVmCurrentStatesIntl());
+            }
         } catch (IllegalStateException e) {
             logger.warn("Unexpected when trying to get vm current states: " + e.getMessage(), e);
         }
@@ -397,8 +404,9 @@ public class TaskSchedulingService {
      * @throws TaskQueueException if too many actions are pending to get tasks collection.
      */
     public void requestAllTasks(Action1<Map<TaskQueue.TaskState, Collection<QueuableTask>>> action) throws TaskQueueException {
-        if (!taskMapRequest.offer(action))
+        if (!taskMapRequest.offer(action)) {
             throw new TaskQueueException("Too many pending actions submitted for getting tasks collection");
+        }
     }
 
     /**
@@ -409,8 +417,9 @@ public class TaskSchedulingService {
      * @throws TaskQueueException if too many actions are pending to get resource status.
      */
     public void requestResourceStatus(Action1<Map<String, Map<VMResource, Double[]>>> action) throws TaskQueueException {
-        if (!resStatusRequest.offer(action))
+        if (!resStatusRequest.offer(action)) {
             throw new TaskQueueException("Too many pending actions submitted for getting resource status");
+        }
     }
 
     /**
@@ -421,8 +430,9 @@ public class TaskSchedulingService {
      * @throws TaskQueueException if too many actions are pending to get VM states.
      */
     public void requestVmCurrentStates(Action1<List<VirtualMachineCurrentState>> action) throws TaskQueueException {
-        if (!vmCurrStateRequest.offer(action))
+        if (!vmCurrStateRequest.offer(action)) {
             throw new TaskQueueException("Too many pending actions submitted for getting VM current state");
+        }
     }
 
     /**
@@ -480,16 +490,16 @@ public class TaskSchedulingService {
         taskToClusterAutoScalerMapGetter = getter;
     }
 
-    public final static class Builder {
+    public static final class Builder {
 
-        private TaskScheduler taskScheduler = null;
-        private Action1<SchedulingResult> schedulingResultCallback = null;
-        private InternalTaskQueue taskQueue = null;
+        private TaskScheduler taskScheduler;
+        private Action1<SchedulingResult> schedulingResultCallback;
+        private InternalTaskQueue taskQueue;
         private long loopIntervalMillis = 50;
         private final ScheduledExecutorService executorService;
-        private Action0 preHook = null;
+        private Action0 preHook;
         private long maxDelayMillis = 5000L;
-        private boolean optimizingShortfallEvaluator = false;
+        private boolean optimizingShortfallEvaluator;
 
         public Builder() {
             ThreadFactory threadFactory = ThreadFactoryBuilder.newBuilder().withNameFormat("fenzo-main").build();
@@ -525,8 +535,9 @@ public class TaskSchedulingService {
          * @return this same {@code Builder}, suitable for further chaining or to build the {@link TaskSchedulingService}.
          */
         public Builder withTaskQueue(TaskQueue taskQ) {
-            if (!(taskQ instanceof InternalTaskQueue))
+            if (!(taskQ instanceof InternalTaskQueue)) {
                 throw new IllegalArgumentException("Argument is not a valid implementation of task queue");
+            }
             taskQueue = (InternalTaskQueue) taskQ;
             return this;
         }
@@ -590,12 +601,15 @@ public class TaskSchedulingService {
          * @return a {@code TaskSchedulingService} built according to the specifications you indicated
          */
         public TaskSchedulingService build() {
-            if (taskScheduler == null)
+            if (taskScheduler == null) {
                 throw new NullPointerException("Null task scheduler not allowed");
-            if (schedulingResultCallback == null)
+            }
+            if (schedulingResultCallback == null) {
                 throw new NullPointerException("Null scheduling result callback not allowed");
-            if (taskQueue == null)
+            }
+            if (taskQueue == null) {
                 throw new NullPointerException("Null task queue not allowed");
+            }
             final TaskSchedulingService schedulingService = new TaskSchedulingService(this);
             if (optimizingShortfallEvaluator) {
                 taskScheduler.getAutoScaler().useOptimizingShortfallAnalyzer();

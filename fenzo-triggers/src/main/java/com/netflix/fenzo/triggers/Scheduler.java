@@ -29,7 +29,7 @@ import static org.quartz.JobBuilder.newJob;
  * Basically, a wrapper over Quartz scheduler. Not intended to be used by classes outside this package
  *
  */
-class Scheduler {
+final class Scheduler {
 
     static final String DEFAULT_GROUP = "DEFAULT_GROUP";
     private org.quartz.Scheduler quartzScheduler;

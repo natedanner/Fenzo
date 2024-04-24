@@ -57,11 +57,13 @@ public final class ExclusiveHostConstraint implements ConstraintEvaluator {
     @Override
     public Result evaluate(TaskRequest taskRequest, VirtualMachineCurrentState targetVM, TaskTrackerState taskTrackerState) {
         Collection<TaskRequest> runningTasks = targetVM.getRunningTasks();
-        if(runningTasks!=null && !runningTasks.isEmpty())
+        if (runningTasks != null && !runningTasks.isEmpty()) {
             return new Result(false, "Already has " + runningTasks.size() + " tasks running on it");
+        }
         Collection<TaskAssignmentResult> tasksCurrentlyAssigned = targetVM.getTasksCurrentlyAssigned();
-        if(tasksCurrentlyAssigned!=null && !tasksCurrentlyAssigned.isEmpty())
+        if (tasksCurrentlyAssigned != null && !tasksCurrentlyAssigned.isEmpty()) {
             return new Result(false, "Already has " + tasksCurrentlyAssigned.size() + " assigned on it");
+        }
         return new Result(true, "");
     }
 }

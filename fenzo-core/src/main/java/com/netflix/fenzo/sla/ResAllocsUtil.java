@@ -56,10 +56,7 @@ public final class ResAllocsUtil {
         if (first.getNetworkMbps() > second.getNetworkMbps()) {
             return false;
         }
-        if (first.getDisk() > second.getDisk()) {
-            return false;
-        }
-        return true;
+        return !(first.getDisk() > second.getDisk());
     }
 
     public static boolean isBounded(ResAllocs first, QueuableTask second) {
@@ -72,10 +69,7 @@ public final class ResAllocsUtil {
         if (first.getNetworkMbps() > second.getNetworkMbps()) {
             return false;
         }
-        if (first.getDisk() > second.getDisk()) {
-            return false;
-        }
-        return true;
+        return !(first.getDisk() > second.getDisk());
     }
 
     public static boolean isBounded(ResAllocs first, ResAllocs second) {
@@ -88,10 +82,7 @@ public final class ResAllocsUtil {
         if (first.getNetworkMbps() > second.getNetworkMbps()) {
             return false;
         }
-        if (first.getDisk() > second.getDisk()) {
-            return false;
-        }
-        return true;
+        return !(first.getDisk() > second.getDisk());
     }
 
     public static boolean hasEqualResources(ResAllocs first, ResAllocs second) {

@@ -127,8 +127,9 @@ public class BasicSchedulerTests {
 
     private boolean atLeastOneInRange(List<Integer> check, int beg, int end) {
         for(Integer c: check)
-            if(c>=beg && c<=end)
+            if (c >= beg && c <= end) {
                 return true;
+            }
         return false;
     }
 
@@ -358,8 +359,8 @@ public class BasicSchedulerTests {
      */
     @Test
     public void testTaskTrackerState1() throws Exception {
-        final AtomicReference<Set<String>> runningTasks = new AtomicReference<Set<String>>(new HashSet<String>());
-        final AtomicReference<Set<String>> assignedTasks = new AtomicReference<Set<String>>(new HashSet<String>());
+        final AtomicReference<Set<String>> runningTasks = new AtomicReference<>(new HashSet<String>());
+        final AtomicReference<Set<String>> assignedTasks = new AtomicReference<>(new HashSet<String>());
         TaskScheduler scheduler = new TaskScheduler.Builder()
                 .withLeaseOfferExpirySecs(10000)
                 .withLeaseRejectAction(new Action1<VirtualMachineLease>() {
@@ -463,22 +464,24 @@ public class BasicSchedulerTests {
                 .setType(Protos.Value.Type.TEXT)
                 .setText(Protos.Value.Text.newBuilder().setValue("8cores")).build();
         attributes.put("ASG", attribute);
-        for(int l=0; l<nHosts8core; l++)
-            leases.add(LeaseProvider.getLeaseOffer("host"+l, 8, 32000, 1024.0, ports, attributes));
+        for (int l = 0; l < nHosts8core; l++) {
+            leases.add(LeaseProvider.getLeaseOffer("host" + l, 8, 32000, 1024.0, ports, attributes));
+        }
         attributes = new HashMap<>();
         Protos.Attribute attribute2 = Protos.Attribute.newBuilder().setName("ASG")
                 .setType(Protos.Value.Type.TEXT)
                 .setText(Protos.Value.Text.newBuilder().setValue("16cores")).build();
         attributes.put("ASG", attribute2);
-        for(int l=0; l<nHosts16core; l++)
+        for (int l = 0; l < nHosts16core; l++) {
             leases.add(LeaseProvider.getLeaseOffer("bighost" + l, 16, 64000, 1024.0, ports, attributes));
+        }
         List<TaskRequest> tasks = Arrays.asList(TaskRequestProvider.getTaskRequest(1, 100, 1));
         SchedulingResult schedulingResult = scheduler.scheduleOnce(tasks, leases);
         Assert.assertEquals(1, schedulingResult.getResultMap().size());
         Assert.assertTrue("Unexpected hostname for task", schedulingResult.getResultMap().keySet().iterator().next().startsWith("host"));
         System.out.println("result map #elements: " + schedulingResult.getResultMap().size());
         Assert.assertEquals(0, schedulingResult.getFailures().size());
-        schedulingResult = scheduler.scheduleOnce(Arrays.asList(TaskRequestProvider.getTaskRequest(16, 1000, 1)), Collections.EMPTY_LIST);
+        schedulingResult = scheduler.scheduleOnce(Arrays.asList(TaskRequestProvider.getTaskRequest(16, 1000, 1)), Collections.emptyList());
         Assert.assertEquals(1, schedulingResult.getResultMap().size());
         Assert.assertTrue("Unexpected hostname for task", schedulingResult.getResultMap().keySet().iterator().next().startsWith("bighost"));
         System.out.println("result map #elements: " + schedulingResult.getResultMap().size());

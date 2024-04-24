@@ -39,7 +39,7 @@ public class TriggerUtils {
 
     public static void validateCronExpression(String cronExpression) {
         try {
-            if (cronExpression == null || cronExpression.equals("")) {
+            if (cronExpression == null || "".equals(cronExpression)) {
                 throw new IllegalArgumentException(String.format("Cron expression cannot be null or empty : %s", cronExpression));
             }
             StringTokenizer tokenizer = new StringTokenizer(cronExpression, " \t", false);

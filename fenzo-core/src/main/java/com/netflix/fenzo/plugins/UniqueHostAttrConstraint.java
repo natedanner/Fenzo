@@ -102,13 +102,15 @@ public class UniqueHostAttrConstraint implements ConstraintEvaluator {
         }
         for(String coTask: coTasks) {
             TaskTracker.ActiveTask activeTask = taskTrackerState.getAllRunningTasks().get(coTask);
-            if(activeTask==null)
+            if (activeTask == null) {
                 activeTask = taskTrackerState.getAllCurrentlyAssignedTasks().get(coTask);
+            }
             if(activeTask!=null) {
                 String usedAttrVal = AttributeUtilities.getAttrValue(activeTask.getTotalLease(), hostAttributeName);
-                if(usedAttrVal==null || usedAttrVal.isEmpty())
-                    return new Result(false, hostAttributeName+" attribute unavailable on host " + activeTask.getTotalLease().hostname() +
-                            " running co-task " + coTask);
+                if (usedAttrVal == null || usedAttrVal.isEmpty()) {
+                    return new Result(false, hostAttributeName + " attribute unavailable on host " + activeTask.getTotalLease().hostname() +
+                                       " running co-task " + coTask);
+                }
                 if(usedAttrVal.equals(targetHostAttrVal)) {
                     return new Result(false, hostAttributeName+" " + targetHostAttrVal + " already used for another co-task " + coTask);
                 }

@@ -41,8 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ShortfallAutoscalerTest {
 
-    private static String hostAttrName = "MachineType";
-    private static String activeVmAttrName = "asg";
+    private static final String hostAttrName = "MachineType";
+    private static final String activeVmAttrName = "asg";
     private final int cpus1=4;
     private final int cpus2=8;
     private final int memMultiplier=1000;
@@ -118,7 +118,7 @@ public class ShortfallAutoscalerTest {
         final AutoScaleRule rule = AutoScaleRuleProvider.createRule(hostAttrVal1, minIdle1, maxIdle1, coolDownSecs*100,
                 1, 1000);
         AtomicInteger scaleUpReceived = new AtomicInteger();
-        Action1<AutoScaleAction> callback = (action) -> {
+        Action1<AutoScaleAction> callback = action -> {
             if (action instanceof ScaleUpAction) {
                 final int scaleUpCount = ((ScaleUpAction) action).getScaleUpCount();
                 scaleUpReceived.addAndGet(scaleUpCount);
@@ -151,8 +151,9 @@ public class ShortfallAutoscalerTest {
         final TaskSchedulingService schedulingService = getSchedulingService(
                 queue, preHook, scheduler, resultCallback);
         final List<QueuableTask> requests = new ArrayList<>();
-        for(int i = 0; i<rule.getMaxIdleHostsToKeep()*8* cpus1; i++)
+        for (int i = 0; i < rule.getMaxIdleHostsToKeep() * 8 * cpus1; i++) {
             requests.add(QueuableTaskProvider.wrapTask(qA1, TaskRequestProvider .getTaskRequest(1, memMultiplier, 1)));
+        }
         System.out.println("Created " + requests.size() + " tasks");
         final List<VirtualMachineLease> leases = new ArrayList<>();
         leases.add(LeaseProvider.getLeaseOffer("host1", cpus1, cpus1 * memMultiplier, ports, attributes1));
@@ -172,8 +173,9 @@ public class ShortfallAutoscalerTest {
         requests.clear();
 
         final int newRequests = rule.getMaxIdleHostsToKeep() * 3 * cpus1;
-        for(int i=0; i<newRequests; i++)
+        for (int i = 0; i < newRequests; i++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(qA1, TaskRequestProvider.getTaskRequest(1, 1000, 1)));
+        }
         result = resultQ.poll(1, TimeUnit.SECONDS);
         Assert.assertNotNull(result);
         expected = newRequests;
@@ -196,7 +198,7 @@ public class ShortfallAutoscalerTest {
         final AutoScaleRule rule2 = AutoScaleRuleProvider.createWithMaxSize(hostAttrVal2, minIdle2, maxIdle2, coolDownSecs,
                 1, 1000, maxSize2);
         BlockingQueue<Map<String, Integer>> scaleupActionsQ = new LinkedBlockingQueue<>();
-        Action1<AutoScaleAction> callback = (action) -> {
+        Action1<AutoScaleAction> callback = action -> {
             if (action instanceof ScaleUpAction) {
                 scaleupActionsQ.offer(Collections.singletonMap(action.getRuleName(),
                         ((ScaleUpAction) action).getScaleUpCount()));
@@ -270,11 +272,13 @@ public class ShortfallAutoscalerTest {
     }
 
     private int getNumTasksAssigned(SchedulingResult result) {
-        if (result == null)
+        if (result == null) {
             return 0;
+        }
         final Map<String, VMAssignmentResult> resultMap = result.getResultMap();
-        if (resultMap == null || resultMap.isEmpty())
+        if (resultMap == null || resultMap.isEmpty()) {
             return 0;
+        }
         int n=0;
         for (VMAssignmentResult r: resultMap.values())
             n += r.getTasksAssigned().size();

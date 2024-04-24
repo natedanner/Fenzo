@@ -44,7 +44,7 @@ public class SampleQbasedScheduling {
 
         private final AtomicInteger numTasksCompleted;
         private final AtomicReference<TaskSchedulingService> schedSvcGetter;
-        private Action1<List<Protos.Offer>> leaseAction = null;
+        private Action1<List<Protos.Offer>> leaseAction;
 
         MesosScheduler(AtomicInteger numTasksCompleted, AtomicReference<TaskSchedulingService> schedSvcGetter) {
             this.numTasksCompleted = numTasksCompleted;
@@ -111,10 +111,10 @@ public class SampleQbasedScheduling {
         }
     }
 
-    private final static QAttributes qAttribs = new QAttributes.QAttributesAdaptor(0, "onlyBucket");
+    private static final QAttributes qAttribs = new QAttributes.QAttributesAdaptor(0, "onlyBucket");
 
-    private final static ConcurrentMap<String, QueuableTask> allTasks = new ConcurrentHashMap<>();
-    private final static ConcurrentMap<String, String> tasksToHostnameMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, QueuableTask> allTasks = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, String> tasksToHostnameMap = new ConcurrentHashMap<>();
 
     /**
      * This is the main method of this sample framework. It showcases how to use Fenzo queues for scheduling. It creates
@@ -248,8 +248,9 @@ public class SampleQbasedScheduling {
                 latch.countDown();
             }
         });
-        if (!latch.await(5, TimeUnit.SECONDS))
+        if (!latch.await(5, TimeUnit.SECONDS)) {
             System.err.println("Timeout waiting for listing all tasks in Fenzo queues");
+        }
 
         System.out.println("ALL DONE");
         System.exit(0);

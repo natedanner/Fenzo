@@ -234,8 +234,9 @@ public class SampleFramework {
         System.out.println("Running all");
         List<VirtualMachineLease> newLeases = new ArrayList<>();
         while(true) {
-            if(isShutdown.get())
+            if (isShutdown.get()) {
                 return;
+            }
             newLeases.clear();
             List<TaskRequest> newTaskRequests = new ArrayList<>();
             System.out.println("#Pending tasks: " + pendingTasksMap.size());

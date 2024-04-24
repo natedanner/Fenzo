@@ -59,12 +59,12 @@ class AutoScaler {
     private final AtomicBoolean isShutdown = new AtomicBoolean();
     private final ConcurrentMap<String, ScalingActivity> scalingActivityMap = new ConcurrentHashMap<>();
     private final ScaleDownConstraintExecutor scaleDownConstraintExecutor;
-    private volatile Action1<AutoScaleAction> callback = null;
+    private volatile Action1<AutoScaleAction> callback;
     private ShortfallEvaluator shortfallEvaluator;
-    private long delayScaleUpBySecs = 0L;
-    private long delayScaleDownBySecs = 0L;
-    private long disabledVmDurationInSecs = 0L;
-    private volatile Func1<QueuableTask, List<String>> taskToClustersGetter = null;
+    private long delayScaleUpBySecs;
+    private long delayScaleDownBySecs;
+    private long disabledVmDurationInSecs;
+    private volatile Func1<QueuableTask, List<String>> taskToClustersGetter;
 
     AutoScaler(final String attributeName, String mapHostnameAttributeName, String scaleDownBalancedByAttributeName,
                final List<AutoScaleRule> autoScaleRules, final AssignableVMs assignableVMs,
@@ -95,8 +95,9 @@ class AutoScaler {
     }
 
     void replaceRule(AutoScaleRule rule) {
-        if (rule == null)
+        if (rule == null) {
             throw new NullPointerException("Can't add null rule");
+        }
         autoScaleRules.replaceRule(rule);
     }
 
@@ -105,8 +106,9 @@ class AutoScaler {
     }
 
     void removeRule(String ruleName) {
-        if (ruleName != null)
+        if (ruleName != null) {
             autoScaleRules.remRule(ruleName);
+        }
     }
 
     void setDelayScaleUpBySecs(long secs) {
@@ -214,8 +216,9 @@ class AutoScaler {
                 scalingActivity.scaleDownRequestedAt = now;
             } else if (delayScaleDownBySecs == 0L || lastReqstAge > delayScaleDownBySecs) {
                 final int size = vmCollection.size(rule.getRuleName());
-                if (rule.getMinSize() > (size - excess))
+                if (rule.getMinSize() > (size - excess)) {
                     excess = Math.max(0, size - rule.getMinSize());
+                }
                 if (excess > 0) {
                     scalingActivity.scaleDownRequestedAt = 0L;
                     scalingActivity.scaleDownAt = now;
@@ -243,12 +246,13 @@ class AutoScaler {
                 if (delayScaleUpBySecs > 0L && lastReqstAge > 2 * delayScaleUpBySecs) { // reset the request at time
                     scalingActivity.scaleUpRequestedAt = now;
                 } else if (delayScaleUpBySecs == 0L || lastReqstAge > delayScaleUpBySecs) {
-                    int shortage = (excess <= 0 && shouldScaleUp(now, prevScalingActivity, rule)) ?
+                    int shortage = excess <= 0 && shouldScaleUp(now, prevScalingActivity, rule) ?
                             rule.getMaxIdleHostsToKeep() - hostAttributeGroup.idleHosts.size() : 0;
                     shortage = Math.max(shortage, hostAttributeGroup.shortFall);
                     final int size = vmCollection.size(rule.getRuleName());
-                    if (shortage + size > rule.getMaxSize())
+                    if (shortage + size > rule.getMaxSize()) {
                         shortage = Math.max(0, rule.getMaxSize() - size);
+                    }
                     if (shortage > 0) {
                         scalingActivity.scaleUpRequestedAt = 0L;
                         scalingActivity.scaleUpAt = now;
@@ -285,8 +289,9 @@ class AutoScaler {
         for (VirtualMachineLease l : idleResources) {
             getAttribute(l).ifPresent(attrValue -> {
                 if (leasesMap.containsKey(attrValue)) {
-                    if (!leasesMap.get(attrValue).rule.idleMachineTooSmall(l))
+                    if (!leasesMap.get(attrValue).rule.idleMachineTooSmall(l)) {
                         leasesMap.get(attrValue).idleHosts.add(l);
+                    }
                 }
             });
         }
@@ -376,9 +381,10 @@ class AutoScaler {
         final String defaultAttributeName = "default";
         for (VirtualMachineLease host : hosts) {
             final Protos.Attribute attribute = host.getAttributeMap().get(scaleDownBalancedByAttributeName);
-            String val = (attribute != null && attribute.hasText()) ? attribute.getText().getValue() : defaultAttributeName;
-            if (hostsMap.get(val) == null)
+            String val = attribute != null && attribute.hasText() ? attribute.getText().getValue() : defaultAttributeName;
+            if (hostsMap.get(val) == null) {
                 hostsMap.put(val, new ArrayList<VirtualMachineLease>());
+            }
             hostsMap.get(val).add(host);
         }
         final List<List<VirtualMachineLease>> lists = new ArrayList<>();
@@ -402,8 +408,9 @@ class AutoScaler {
     }
 
     private String getMappedHostname(VirtualMachineLease lease) {
-        if (mapHostnameAttributeName == null || mapHostnameAttributeName.isEmpty())
+        if (mapHostnameAttributeName == null || mapHostnameAttributeName.isEmpty()) {
             return lease.hostname();
+        }
         Protos.Attribute attribute = lease.getAttributeMap().get(mapHostnameAttributeName);
         if (attribute == null) {
             logger.error("Didn't find attribute " + mapHostnameAttributeName + " for host " + lease.hostname());
@@ -417,11 +424,12 @@ class AutoScaler {
     }
 
     void shutdown() {
-        if (isShutdown.compareAndSet(false, true))
+        if (isShutdown.compareAndSet(false, true)) {
             executor.shutdown();
+        }
     }
 
-    private static class HostAttributeGroup {
+    private static final class HostAttributeGroup {
         String name;
         List<VirtualMachineLease> idleHosts;
         List<VirtualMachineLease> idleInactiveHosts;
@@ -437,7 +445,7 @@ class AutoScaler {
         }
     }
 
-    private static class ScalingActivity {
+    private static final class ScalingActivity {
         private long scaleUpAt;
         private long scaleUpRequestedAt;
         private long scaleDownAt;

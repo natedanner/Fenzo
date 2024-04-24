@@ -39,8 +39,8 @@ public class TieredQueue implements InternalTaskQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(TieredQueue.class);
     private final List<Tier> tiers;
-    private Iterator<Tier> iterator = null;
-    private Tier currTier = null;
+    private Iterator<Tier> iterator;
+    private Tier currTier;
     private final BlockingQueue<QueuableTask> tasksToQueue;
     private final BlockingQueue<TieredQueueSlas> slasQueue;
     private final TierSlas tierSlas = new TierSlas();
@@ -52,8 +52,9 @@ public class TieredQueue implements InternalTaskQueue {
      */
     public TieredQueue(int numTiers) {
         tiers = new ArrayList<>(numTiers);
-        for ( int i=0; i<numTiers; i++ )
+        for (int i = 0; i < numTiers; i++) {
             tiers.add(new Tier(i, allocsShareGetter));
+        }
         tasksToQueue = new LinkedBlockingQueue<>();
         slasQueue = new LinkedBlockingQueue<>();
     }
@@ -88,8 +89,9 @@ public class TieredQueue implements InternalTaskQueue {
 
     private void addInternal(QueuableTask task) throws TaskQueueException {
         final int tierNumber = task.getQAttributes().getTierNumber();
-        if ( tierNumber >= tiers.size() )
+        if (tierNumber >= tiers.size()) {
             throw new InvalidTierNumberException(tierNumber, tiers.size());
+        }
         tiers.get(tierNumber).queueTask(task);
     }
 
@@ -111,18 +113,20 @@ public class TieredQueue implements InternalTaskQueue {
         }
         if (currTier != null) {
             final Assignable<QueuableTask> taskOrFailure = currTier.nextTaskToLaunch();
-            if (taskOrFailure != null)
+            if (taskOrFailure != null) {
                 return taskOrFailure;
+            }
             currTier = null; // currTier all done
         }
         while (currTier == null && iterator.hasNext()) {
             if(iterator.hasNext()) {
                 currTier = iterator.next();
                 final Assignable<QueuableTask> taskOrFailure = currTier.nextTaskToLaunch();
-                if (taskOrFailure != null)
-                    return taskOrFailure;
-                else
-                    currTier = null; // currTier is done
+                if (taskOrFailure != null) {
+                    return taskOrFailure; // currTier is done
+                } else {
+                    currTier = null;
+                }
             }
         }
         return null;
@@ -147,8 +151,9 @@ public class TieredQueue implements InternalTaskQueue {
                     }
             }
         }
-        if (!exceptions.isEmpty())
+        if (!exceptions.isEmpty()) {
             throw new TaskQueueMultiException(exceptions);
+        }
         return queueChanged;
     }
 

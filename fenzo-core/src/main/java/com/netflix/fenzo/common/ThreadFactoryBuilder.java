@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * A ThreadFactory builder based on <a href="https://github.com/google/guava">Guava's</a> ThreadFactoryBuilder.
  */
 public final class ThreadFactoryBuilder {
-    private String nameFormat = null;
-    private Boolean daemon = null;
+    private String nameFormat;
+    private Boolean daemon;
 
     private ThreadFactoryBuilder() {
     }
@@ -55,7 +55,7 @@ public final class ThreadFactoryBuilder {
     private static ThreadFactory build(ThreadFactoryBuilder builder) {
         final String nameFormat = builder.nameFormat;
         final Boolean daemon = builder.daemon;
-        final AtomicLong count = (nameFormat != null) ? new AtomicLong(0) : null;
+        final AtomicLong count = nameFormat != null ? new AtomicLong(0) : null;
         return runnable -> {
             Thread thread = new Thread(runnable);
             if (nameFormat != null) {

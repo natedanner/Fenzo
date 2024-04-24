@@ -53,13 +53,15 @@ class ResAllocsEvaluater {
     }
 
     void replaceResAllocs(ResAllocs r) {
-        if(r != null)
+        if (r != null) {
             addQ.offer(r);
+        }
     }
 
     void remResAllocs(String groupName) {
-        if(groupName != null && !groupName.isEmpty())
+        if (groupName != null && !groupName.isEmpty()) {
             remQ.offer(groupName);
+        }
     }
 
     boolean prepare() {
@@ -93,32 +95,40 @@ class ResAllocsEvaluater {
     }
 
     AssignmentFailure hasResAllocs(TaskRequest task) {
-        if(resAllocs.isEmpty())
+        if (resAllocs.isEmpty()) {
             return null;
-        if(failedTaskGroups.contains(task.taskGroupName()))
+        }
+        if (failedTaskGroups.contains(task.taskGroupName())) {
             return new AssignmentFailure(VMResource.ResAllocs, 1.0, 0.0, 0.0, "");
+        }
         final TaskTracker.TaskGroupUsage usage = taskTracker.getUsage(task.taskGroupName());
         final ResAllocs resAllocs = this.resAllocs.get(task.taskGroupName());
-        if(resAllocs == null)
+        if (resAllocs == null) {
             return new AssignmentFailure(VMResource.ResAllocs, 1.0, 0.0, 0.0, "");
+        }
         if(usage==null) {
             final boolean success = hasZeroUsageAllowance(resAllocs);
-            if(!success)
+            if (!success) {
                 failedTaskGroups.add(task.taskGroupName());
+            }
             return success? null : new AssignmentFailure(VMResource.ResAllocs, 1.0, 0.0, 0.0, "");
         }
         // currently, no way to indicate which of resAllocs's resources limited us
-        if((usage.getCores()+task.getCPUs()) > resAllocs.getCores())
+        if ((usage.getCores() + task.getCPUs()) > resAllocs.getCores()) {
             return new AssignmentFailure(VMResource.ResAllocs, task.getCPUs(), usage.getCores(), resAllocs.getCores(),
-                    "");
-        if((usage.getMemory() + task.getMemory()) > resAllocs.getMemory())
+                               "");
+        }
+        if ((usage.getMemory() + task.getMemory()) > resAllocs.getMemory()) {
             return new AssignmentFailure(VMResource.ResAllocs, task.getMemory(), usage.getMemory(), resAllocs.getMemory(),
-                    "");
-        if((usage.getNetworkMbps()+task.getNetworkMbps()) > resAllocs.getNetworkMbps())
+                               "");
+        }
+        if ((usage.getNetworkMbps() + task.getNetworkMbps()) > resAllocs.getNetworkMbps()) {
             return new AssignmentFailure(
-                    VMResource.ResAllocs, task.getNetworkMbps(), usage.getNetworkMbps(), resAllocs.getNetworkMbps(), "");
-        if((usage.getDisk()+task.getDisk()) > resAllocs.getDisk())
+                               VMResource.ResAllocs, task.getNetworkMbps(), usage.getNetworkMbps(), resAllocs.getNetworkMbps(), "");
+        }
+        if ((usage.getDisk() + task.getDisk()) > resAllocs.getDisk()) {
             return new AssignmentFailure(VMResource.ResAllocs, task.getDisk(), usage.getDisk(), resAllocs.getDisk(), "");
+        }
         return null;
     }
 

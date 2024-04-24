@@ -41,8 +41,9 @@ import java.util.Map;
 
     void setAlloc(String bucket, ResAllocs value) {
         final ResAllocs prev = allocsMap.put(bucket, value);
-        if (prev != null)
+        if (prev != null) {
             subtract(prev);
+        }
         add(value);
     }
 
@@ -86,8 +87,9 @@ import java.util.Map;
             return 1.0; // special case if there are no allocations setup
         }
         final ResAllocs resAllocs = allocsMap.get(bucket);
-        if (resAllocs == null)
+        if (resAllocs == null) {
             return totalCpu < (1.0 / eps) ? eps : 1.0 / totalCpu; // arbitrarily base it on cpus
+        }
         double val = totalCpu < 1.0 ? eps : resAllocs.getCores() / totalCpu;
         val = Math.max(val, totalMem < 1.0 ? eps : resAllocs.getMemory() / totalMem);
         val = Math.max(val, totalNetwork < 1.0 ? eps : resAllocs.getNetworkMbps() / totalNetwork);

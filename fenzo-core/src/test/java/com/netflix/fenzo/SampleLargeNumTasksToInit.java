@@ -88,8 +88,9 @@ public class SampleLargeNumTasksToInit {
         StringBuilder json = new StringBuilder();
         while (n >= 0) {
             n = inputStream.read(buf, 0, 1024);
-            if (n>0)
+            if (n > 0) {
                 json.append(new String(buf, 0, n));
+            }
         }
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json.toString(), new TypeReference<List<Task>>() {});

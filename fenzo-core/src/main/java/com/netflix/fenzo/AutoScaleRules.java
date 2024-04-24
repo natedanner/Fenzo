@@ -40,9 +40,10 @@ class AutoScaleRules {
 
     AutoScaleRules(List<AutoScaleRule> autoScaleRules) {
         ruleMap = new HashMap<>();
-        if(autoScaleRules!=null && !autoScaleRules.isEmpty())
-            for(AutoScaleRule r: autoScaleRules)
+        if (autoScaleRules != null && !autoScaleRules.isEmpty()) {
+            for (AutoScaleRule r : autoScaleRules)
                 ruleMap.put(r.getRuleName(), r);
+        }
     }
 
     /**
@@ -53,8 +54,9 @@ class AutoScaleRules {
      * @param rule the autoscale rule you want to add or modify
      */
     void replaceRule(AutoScaleRule rule) {
-        if(rule != null)
+        if (rule != null) {
             addQ.offer(rule);
+        }
     }
 
     /**
@@ -65,8 +67,9 @@ class AutoScaleRules {
      * @param ruleName the rule name of the autoscale rule you want to unqueueTask from the set of active rules
      */
     void remRule(String ruleName) {
-        if(ruleName != null)
+        if (ruleName != null) {
             remQ.offer(ruleName);
+        }
     }
 
     void prepare() {
@@ -75,8 +78,9 @@ class AutoScaleRules {
             final Iterator<AutoScaleRule> iterator = addList.iterator();
             while(iterator.hasNext()) {
                 final AutoScaleRule r = iterator.next();
-                if(r != null && r.getRuleName()!=null)
+                if (r != null && r.getRuleName() != null) {
                     ruleMap.put(r.getRuleName(), r);
+                }
                 iterator.remove();
             }
         }
@@ -85,8 +89,9 @@ class AutoScaleRules {
             final Iterator<String> iterator = remList.iterator();
             while(iterator.hasNext()) {
                 final String name = iterator.next();
-                if(name != null)
+                if (name != null) {
                     ruleMap.remove(name);
+                }
                 iterator.remove();
             }
         }

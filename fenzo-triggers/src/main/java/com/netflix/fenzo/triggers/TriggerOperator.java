@@ -270,8 +270,9 @@ public class TriggerOperator {
      * @throws SchedulerException
      */
     public void scheduleTrigger(ScheduledTrigger scheduledTrigger) throws SchedulerException {
-        if (!initialized.get())
+        if (!initialized.get()) {
             throw new SchedulerException("Trigger service is not initialized. initialize() must be called before calling scheduleTrigger() method");
+        }
         Map jobDataMap = new HashMap();
         jobDataMap.put(TRIGGER_OPERATOR_KEY, this);
         jobDataMap.put(TRIGGER_KEY, scheduledTrigger);
@@ -335,8 +336,9 @@ public class TriggerOperator {
      * @throws SchedulerException
      */
     public void unscheduleTrigger(ScheduledTrigger scheduledTrigger) throws SchedulerException {
-        if (!initialized.get())
+        if (!initialized.get()) {
             throw new SchedulerException("Trigger service is not initialized. initialize() must be called before calling unscheduleTrigger() method");
+        }
         try {
             scheduler.unscheduleQuartzJob(scheduledTrigger.getId(), Scheduler.DEFAULT_GROUP);
             scheduledTrigger.setQuartzTrigger(null);
@@ -389,7 +391,9 @@ public class TriggerOperator {
      * @throws Exception if an exception occurred during the execution of the {@code Trigger}
      */
     public void execute(Trigger trigger) throws Exception {
-        if (trigger.isDisabled()) return;
+        if (trigger.isDisabled()) {
+            return;
+        }
         try {
             ((Action1) trigger.getAction().newInstance()).call(trigger.getData());
         } catch (Exception e) {

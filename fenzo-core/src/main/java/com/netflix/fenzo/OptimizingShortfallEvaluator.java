@@ -51,16 +51,19 @@ class OptimizingShortfallEvaluator extends BaseShortfallEvaluator {
 
     @Override
     public Map<String, Integer> getShortfall(Set<String> vmGroupNames, Set<TaskRequest> failures, AutoScaleRules autoScaleRules) {
-        if (schedulingService == null || failures == null || failures.isEmpty())
+        if (schedulingService == null || failures == null || failures.isEmpty()) {
             return Collections.emptyMap();
+        }
 
         final List<TaskRequest> filteredTasks = filterFailedTasks(failures);
         final Map<String, Integer> shortfallTasksPerGroup = fillShortfallMap(vmGroupNames, filteredTasks);
-        if (shortfallTasksPerGroup.isEmpty())
+        if (shortfallTasksPerGroup.isEmpty()) {
             return Collections.emptyMap();
+        }
 
-        if (schedulingService.isShutdown())
+        if (schedulingService.isShutdown()) {
             return Collections.emptyMap();
+        }
 
         final InternalTaskQueue taskQueue = createAndFillAlternateQueue(filteredTasks);
         return schedulingService.requestPseudoScheduling(taskQueue, shortfallTasksPerGroup);

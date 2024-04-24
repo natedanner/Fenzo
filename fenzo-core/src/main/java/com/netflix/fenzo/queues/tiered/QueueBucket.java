@@ -48,7 +48,7 @@ class QueueBucket implements UsageTrackedQueue {
     // collection in order to keep the iterator on queuedTasks consistent throughout the scheduling iteration. Remember
     // that scheduler's taskTracker will trigger call into assignTask() during the scheduling iteration.
     private final LinkedHashMap<String, QueuableTask> assignedTasks;
-    private Iterator<Map.Entry<String, QueuableTask>> iterator = null;
+    private Iterator<Map.Entry<String, QueuableTask>> iterator;
     private ResAllocs tierResources;
     private final BiFunction<Integer, String, Double> allocsShareGetter;
     private final ResUsage tierUsage;
@@ -79,12 +79,15 @@ class QueueBucket implements UsageTrackedQueue {
 
     @Override
     public void queueTask(QueuableTask t) throws TaskQueueException {
-        if (iterator != null)
+        if (iterator != null) {
             throw new ConcurrentModificationException("Must reset before queuing tasks");
-        if (queuedTasks.get(t.getId()) != null)
+        }
+        if (queuedTasks.get(t.getId()) != null) {
             throw new TaskQueueException("Duplicate task not allowed, task with id " + t.getId());
-        if (launchedTasks.get(t.getId()) != null)
+        }
+        if (launchedTasks.get(t.getId()) != null) {
             throw new TaskQueueException("Task already launched, can't queue, id=" + t.getId());
+        }
         queuedTasks.put(t.getId(), t);
     }
 
@@ -92,37 +95,45 @@ class QueueBucket implements UsageTrackedQueue {
     public Assignable<QueuableTask> nextTaskToLaunch() throws TaskQueueException {
         if (iterator == null) {
             iterator = queuedTasks.entrySet().iterator();
-            if (!assignedTasks.isEmpty())
+            if (!assignedTasks.isEmpty()) {
                 throw new TaskQueueException(assignedTasks.size() + " tasks still assigned but not launched");
+            }
         }
         while (iterator.hasNext()) {
             final Map.Entry<String, QueuableTask> nextTask = iterator.next();
-            if (nextTask.getValue().getReadyAt() <= System.currentTimeMillis())
+            if (nextTask.getValue().getReadyAt() <= System.currentTimeMillis()) {
                 return Assignable.success(nextTask.getValue());
+            }
         }
         return null;
     }
 
     @Override
     public void assignTask(QueuableTask t) throws TaskQueueException {
-        if (iterator == null)
+        if (iterator == null) {
             throw new TaskQueueException(new IllegalStateException("assign called on task " + t.getId() + " while not iterating over tasks"));
-        if (queuedTasks.get(t.getId()) == null)
+        }
+        if (queuedTasks.get(t.getId()) == null) {
             throw new TaskQueueException("Task not in queue for assigning, id=" + t.getId());
-        if (assignedTasks.get(t.getId()) != null)
+        }
+        if (assignedTasks.get(t.getId()) != null) {
             throw new TaskQueueException("Task already assigned, id=" + t.getId());
-        if (launchedTasks.get(t.getId()) != null)
+        }
+        if (launchedTasks.get(t.getId()) != null) {
             throw new TaskQueueException("Task already launched, id=" + t.getId());
+        }
         assignedTasks.put(t.getId(), t);
         addUsage(t);
     }
 
     @Override
     public boolean launchTask(QueuableTask t) throws TaskQueueException {
-        if (iterator != null)
+        if (iterator != null) {
             throw new ConcurrentModificationException("Must reset before launching tasks");
-        if (launchedTasks.get(t.getId()) != null)
+        }
+        if (launchedTasks.get(t.getId()) != null) {
             throw new TaskQueueException("Task already launched, id=" + t.getId());
+        }
         queuedTasks.remove(t.getId());
         final QueuableTask removed = assignedTasks.remove(t.getId());
         launchedTasks.put(t.getId(), t);
@@ -135,15 +146,18 @@ class QueueBucket implements UsageTrackedQueue {
 
     @Override
     public QueuableTask removeTask(String id, QAttributes qAttributes) throws TaskQueueException {
-        if (iterator != null)
+        if (iterator != null) {
             throw new TaskQueueException("Must reset before removing tasks");
+        }
         QueuableTask removed = queuedTasks.remove(id);
         if (removed == null) {
             removed = assignedTasks.remove(id);
-            if (removed == null)
+            if (removed == null) {
                 removed = launchedTasks.remove(id);
-            if (removed != null)
+            }
+            if (removed != null) {
                 removeUsage(removed);
+            }
         }
         return removed;
     }
@@ -172,11 +186,13 @@ class QueueBucket implements UsageTrackedQueue {
 
     @Override
     public void setTaskReadyTime(String taskId, QAttributes qAttributes, long when) throws TaskQueueException {
-        if (iterator != null)
+        if (iterator != null) {
             throw new TaskQueueException("Must reset before setting task ready time");
+        }
         final QueuableTask task = queuedTasks.get(taskId);
-        if (task != null)
+        if (task != null) {
             task.safeSetReadyAt(when);
+        }
     }
 
     public boolean hasGuaranteedCapacityFor(QueuableTask task) {
@@ -212,8 +228,9 @@ class QueueBucket implements UsageTrackedQueue {
 
     @Override
     public Map<TaskQueue.TaskState, Collection<QueuableTask>> getAllTasks() throws TaskQueueException {
-        if (iterator != null)
+        if (iterator != null) {
             throw new TaskQueueException("Must reset before getting list of tasks");
+        }
         Map<TaskQueue.TaskState, Collection<QueuableTask>> result = new HashMap<>();
         result.put(TaskQueue.TaskState.QUEUED, Collections.unmodifiableCollection(queuedTasks.values()));
         result.put(TaskQueue.TaskState.LAUNCHED, Collections.unmodifiableCollection(launchedTasks.values()));

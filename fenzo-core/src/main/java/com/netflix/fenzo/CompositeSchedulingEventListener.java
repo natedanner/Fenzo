@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-class CompositeSchedulingEventListener implements SchedulingEventListener {
+final class CompositeSchedulingEventListener implements SchedulingEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(CompositeSchedulingEventListener.class);
 

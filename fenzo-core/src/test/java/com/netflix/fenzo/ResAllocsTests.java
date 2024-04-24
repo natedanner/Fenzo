@@ -98,15 +98,17 @@ public class ResAllocsTests {
         final TaskScheduler scheduler = getSchedulerNoResAllocs();
         final List<VirtualMachineLease> leases = LeaseProvider.getLeases(10, 4.0, 4000.0, 1024.0, 1, 100);
         final List<TaskRequest> tasks = new ArrayList<>();
-        for(int i=0; i<leases.size()*4; i++)
+        for (int i = 0; i < leases.size() * 4; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(1.0, 10.0, 1));
+        }
         final SchedulingResult schedulingResult = scheduler.scheduleOnce(tasks, leases);
         final Map<String, VMAssignmentResult> resultMap = schedulingResult.getResultMap();
         int successes=0;
         for(Map.Entry<String, VMAssignmentResult> entry : resultMap.entrySet()) {
             for(TaskAssignmentResult r: entry.getValue().getTasksAssigned()) {
-                if(r.isSuccessful())
+                if (r.isSuccessful()) {
                     successes++;
+                }
             }
         }
         Assert.assertEquals("#success assignments: ", tasks.size(), successes);
@@ -119,15 +121,17 @@ public class ResAllocsTests {
         final List<VirtualMachineLease> leases = LeaseProvider.getLeases(2, 4.0, 4000.0, 1024.0, 1, 100);
         final List<TaskRequest> tasks = new ArrayList<>();
         final int numCores = (int)scheduler.getResAllocs().get(grp1).getCores();
-        for(int i=0; i<numCores+1; i++)
+        for (int i = 0; i < numCores + 1; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(grp1, 1.0, 1000.0, 100.0, 1));
+        }
         final SchedulingResult schedulingResult = scheduler.scheduleOnce(tasks, leases);
         final Map<String, VMAssignmentResult> resultMap = schedulingResult.getResultMap();
         int successes=0;
         for(Map.Entry<String, VMAssignmentResult> entry : resultMap.entrySet()) {
             for(TaskAssignmentResult r: entry.getValue().getTasksAssigned()) {
-                if(r.isSuccessful())
+                if (r.isSuccessful()) {
                     successes++;
+                }
             }
         }
         Assert.assertEquals("#success assignments: ", numCores, successes);
@@ -152,15 +156,13 @@ public class ResAllocsTests {
         int grp2Success=0;
         for(Map.Entry<String, VMAssignmentResult> entry : resultMap.entrySet()) {
             for(TaskAssignmentResult r: entry.getValue().getTasksAssigned()) {
-                if(r.isSuccessful())
-                    switch (r.getRequest().taskGroupName()) {
-                        case grp1:
-                            grp1Success++;
-                            break;
-                        case grp2:
-                            grp2Success++;
-                            break;
+                if (r.isSuccessful()) {
+                    if (grp1.equals(r.getRequest().taskGroupName())) {
+                        grp1Success++;
+                    } else if (grp2.equals(r.getRequest().taskGroupName())) {
+                        grp2Success++;
                     }
+                }
             }
         }
         Assert.assertEquals(grp1Success, numCores);
@@ -183,11 +185,13 @@ public class ResAllocsTests {
                 .setType(Protos.Value.Type.TEXT)
                 .setText(Protos.Value.Text.newBuilder().setValue(hostAttrVal1)).build();
         attributes.put(hostAttrName, attribute);
-        for(int l=0; l<minIdle+1; l++)
-            leases.add(LeaseProvider.getLeaseOffer("host"+l, cpus1, memory1, 1024.0, ports, attributes));
+        for (int l = 0; l < minIdle + 1; l++) {
+            leases.add(LeaseProvider.getLeaseOffer("host" + l, cpus1, memory1, 1024.0, ports, attributes));
+        }
         final List<TaskRequest> tasks = new ArrayList<>();
-        for(int t=0; t<cpus1*2; t++)
+        for (int t = 0; t < cpus1 * 2; t++) {
             tasks.add(TaskRequestProvider.getTaskRequest(grp1, 1, 100, 10, 1));
+        }
         final AtomicBoolean gotScaleUpRequest = new AtomicBoolean();
         scheduler.setAutoscalerCallback(new Action1<AutoScaleAction>() {
             @Override
@@ -224,8 +228,9 @@ public class ResAllocsTests {
         System.out.println("mSecs taken: " + (System.currentTimeMillis()-now));
         Assert.assertEquals("Assigned hosts should have been 1, it is: " + assignedHosts, 1, assignedHosts.size());
         Assert.assertFalse("Unexpected to get scale up request", gotScaleUpRequest.get());
-        for(int t=0; t<cpus1*2; t++)
+        for (int t = 0; t < cpus1 * 2; t++) {
             tasks.add(TaskRequestProvider.getTaskRequest(grp2, 1, 100, 10, 1));
+        }
         tasks.add(TaskRequestProvider.getTaskRequest(grp1, 1, 100, 10, 1));
         for(int i=0; i<coolDownSecs+2 && !gotScaleUpRequest.get(); i++) {
             final Map<String, VMAssignmentResult> resultMap = scheduler.scheduleOnce(tasks, leases).getResultMap();
@@ -239,9 +244,9 @@ public class ResAllocsTests {
                             if(r.getRequest().taskGroupName().equals(grp2)) {
                                 successes2++;
                                 assignedHosts.add(entry.getKey());
-                            }
-                            else
+                            } else {
                                 successes1++;
+                            }
                         }
                     }
                 }
@@ -263,8 +268,9 @@ public class ResAllocsTests {
         final int numCores = (int)scheduler.getResAllocs().get(grp1).getCores();
         final List<VirtualMachineLease> leases = LeaseProvider.getLeases(2, (double)numCores, numCores*1000.0, 1024.0, 1, 100);
         final List<TaskRequest> tasks = new ArrayList<>();
-        for(int i=0; i<numCores; i++)
+        for (int i = 0; i < numCores; i++) {
             tasks.add(TaskRequestProvider.getTaskRequest(grp1, 1.0, 1000.0, 100.0, 1));
+        }
         SchedulingResult schedulingResult = scheduler.scheduleOnce(tasks, leases);
         Map<String, VMAssignmentResult> resultMap = schedulingResult.getResultMap();
         int successes=0;
@@ -293,8 +299,9 @@ public class ResAllocsTests {
         successes=0;
         for(Map.Entry<String, VMAssignmentResult> entry : resultMap.entrySet()) {
             for(TaskAssignmentResult r: entry.getValue().getTasksAssigned()) {
-                if(r.isSuccessful())
+                if (r.isSuccessful()) {
                     successes++;
+                }
             }
         }
         Assert.assertEquals("Incorrect #success assignments: ", 1, successes);
@@ -332,8 +339,9 @@ public class ResAllocsTests {
         int successes=0;
         for(Map.Entry<String, VMAssignmentResult> entry : schedulingResult.getResultMap().entrySet()) {
             for(TaskAssignmentResult r: entry.getValue().getTasksAssigned()) {
-                if(r.isSuccessful())
+                if (r.isSuccessful()) {
                     successes++;
+                }
             }
         }
         Assert.assertEquals("Incorrect #success assignments: ", 1, successes);

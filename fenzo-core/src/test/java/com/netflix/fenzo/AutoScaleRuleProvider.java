@@ -51,7 +51,7 @@ public class AutoScaleRuleProvider {
 
             @Override
             public boolean idleMachineTooSmall(VirtualMachineLease lease) {
-                return (lease.cpuCores() < cpuTooSmall || lease.memoryMB() < memoryTooSmall);
+                return lease.cpuCores() < cpuTooSmall || lease.memoryMB() < memoryTooSmall;
             }
         };
     }
@@ -86,7 +86,7 @@ public class AutoScaleRuleProvider {
 
             @Override
             public boolean idleMachineTooSmall(VirtualMachineLease lease) {
-                return (lease.cpuCores() < cpuTooSmall || lease.memoryMB() < memoryTooSmall);
+                return lease.cpuCores() < cpuTooSmall || lease.memoryMB() < memoryTooSmall;
             }
 
             @Override
@@ -121,7 +121,7 @@ public class AutoScaleRuleProvider {
 
             @Override
             public boolean idleMachineTooSmall(VirtualMachineLease lease) {
-                return (lease.cpuCores() < cpuTooSmall || lease.memoryMB() < memoryTooSmall);
+                return lease.cpuCores() < cpuTooSmall || lease.memoryMB() < memoryTooSmall;
             }
 
             @Override

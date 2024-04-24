@@ -29,7 +29,7 @@ public abstract class AbstractInMemoryDao<T> {
 
     public static final String SEPARATOR = ":";
 
-    private final ConcurrentMap<String, ConcurrentMap<String,T>> map = new ConcurrentHashMap<String, ConcurrentMap<String,T>>();
+    private final ConcurrentMap<String, ConcurrentMap<String,T>> map = new ConcurrentHashMap<>();
     private final String idSeparator;
 
     protected AbstractInMemoryDao() {
@@ -47,7 +47,7 @@ public abstract class AbstractInMemoryDao<T> {
      * @param type
      */
     protected void create(String group, String id, T type) {
-        ConcurrentMap<String, T> subMap = new ConcurrentHashMap<String, T>();
+        ConcurrentMap<String, T> subMap = new ConcurrentHashMap<>();
         subMap.put(id, type);
         Map existingTriggerMap = map.putIfAbsent(group, subMap);
         if (existingTriggerMap != null) {
@@ -167,7 +167,9 @@ public abstract class AbstractInMemoryDao<T> {
      * @throws IllegalArgumentException
      */
     protected String extractGroupFromId(String columnName) {
-        if (columnName == null || !columnName.contains(idSeparator)) return columnName;
+        if (columnName == null || !columnName.contains(idSeparator)) {
+            return columnName;
+        }
         String[] tokens = columnName.split(idSeparator);
         if (tokens.length == 2) {
             return tokens[0];

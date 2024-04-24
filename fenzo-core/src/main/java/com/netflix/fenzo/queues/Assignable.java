@@ -5,7 +5,7 @@ import com.netflix.fenzo.AssignmentFailure;
 /**
  * A wrapper object containing a task, and optionally an assignment failure for this task.
  */
-public class Assignable<T> {
+public final class Assignable<T> {
 
     private final T task;
     private final AssignmentFailure assignmentFailure;

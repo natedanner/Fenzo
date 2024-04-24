@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Builder_pattern">Wikipedia: Builder pattern</a>
  */
-public class TaskScheduler {
+public final class TaskScheduler {
 
     private static final int PARALLEL_SCHED_EVAL_MIN_BATCH_SIZE = 30;
 
@@ -84,32 +84,32 @@ public class TaskScheduler {
      *
      * @see <a href="https://en.wikipedia.org/wiki/Builder_pattern">Wikipedia: Builder pattern</a>
      */
-    public final static class Builder {
+    public static final class Builder {
 
-        private Action1<VirtualMachineLease> leaseRejectAction = null;
+        private Action1<VirtualMachineLease> leaseRejectAction;
         private long leaseOfferExpirySecs = 120;
         private int maxOffersToReject = 4;
-        private boolean rejectAllExpiredOffers = false;
+        private boolean rejectAllExpiredOffers;
         private VMTaskFitnessCalculator fitnessCalculator = new DefaultFitnessCalculator();
-        private String autoScaleByAttributeName = null;
-        private String autoScalerMapHostnameAttributeName = null;
-        private String autoScaleDownBalancedByAttributeName = null;
+        private String autoScaleByAttributeName;
+        private String autoScalerMapHostnameAttributeName;
+        private String autoScaleDownBalancedByAttributeName;
         private ScaleDownOrderEvaluator scaleDownOrderEvaluator;
         private Map<ScaleDownConstraintEvaluator, Double> weightedScaleDownConstraintEvaluators;
         private PreferentialNamedConsumableResourceEvaluator preferentialNamedConsumableResourceEvaluator = new DefaultPreferentialNamedConsumableResourceEvaluator();
-        private Action1<AutoScaleAction> autoscalerCallback = null;
-        private long delayAutoscaleUpBySecs = 0L;
-        private long delayAutoscaleDownBySecs = 0L;
-        private long disabledVmDurationInSecs = 0L;
+        private Action1<AutoScaleAction> autoscalerCallback;
+        private long delayAutoscaleUpBySecs;
+        private long delayAutoscaleDownBySecs;
+        private long disabledVmDurationInSecs;
         private List<AutoScaleRule> autoScaleRules = new ArrayList<>();
         private Func1<Double, Boolean> isFitnessGoodEnoughFunction = f -> f > 1.0;
-        private boolean disableShortfallEvaluation = false;
-        private Map<String, ResAllocs> resAllocs = null;
-        private boolean singleOfferMode = false;
+        private boolean disableShortfallEvaluation;
+        private Map<String, ResAllocs> resAllocs;
+        private boolean singleOfferMode;
         private final List<SchedulingEventListener> schedulingEventListeners = new ArrayList<>();
         private int maxConcurrent = Runtime.getRuntime().availableProcessors();
         private Supplier<Long> taskBatchSizeSupplier = () -> Long.MAX_VALUE;
-        private Func1<List<AssignableVirtualMachine>, List<AssignableVirtualMachine>> assignableVMsEvaluator = null;
+        private Func1<List<AssignableVirtualMachine>, List<AssignableVirtualMachine>> assignableVMsEvaluator;
 
         /**
          * (Required) Call this method to establish a method that your task scheduler will call to notify you
@@ -508,7 +508,7 @@ public class TaskScheduler {
         }
     }
 
-    private static class EvalResult {
+    private static final class EvalResult {
         List<TaskAssignmentResult> assignmentResults;
         TaskAssignmentResult result;
         int numAllocationTrials;
@@ -535,7 +535,7 @@ public class TaskScheduler {
     private final AtomicBoolean isShutdown = new AtomicBoolean();
     private final ResAllocsEvaluater resAllocsEvaluator;
     private final TaskTracker taskTracker;
-    private volatile boolean usingSchedulingService = false;
+    private volatile boolean usingSchedulingService;
     private final String usingSchedSvcMesg = "Invalid call when using task scheduling service";
     private final Func1<List<AssignableVirtualMachine>, List<AssignableVirtualMachine>> assignableVMsEvaluator;
 

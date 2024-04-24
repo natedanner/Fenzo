@@ -95,30 +95,36 @@ public class TieredQueueTest {
                 schedulingResult -> System.out.println("Got scheduling result with " +
                         schedulingResult.getResultMap().size() + " results"));
 
-        int A1=0;
-        int B1=0;
-        int C1=0;
-        for (int i=0; i<2; i++)
+        int a1=0;
+        int b1=0;
+        int c1=0;
+        for (int i = 0; i < 2; i++) {
             schedulingService.initializeRunningTask(
-                    QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(2, 2000, 1)),
-                    "hostA"
+                               QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(2, 2000, 1)),
+                               "hostA"
             );
-        for (int i=0; i<4; i++)
+        }
+        for (int i = 0; i < 4; i++) {
             schedulingService.initializeRunningTask(
-                    QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(2, 2000, 1)),
-                    "hostB"
+                               QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(2, 2000, 1)),
+                               "hostB"
             );
-        for (int i=0; i<3; i++)
+        }
+        for (int i = 0; i < 3; i++) {
             schedulingService.initializeRunningTask(
-                    QueuableTaskProvider.wrapTask(tier1bktC, TaskRequestProvider.getTaskRequest(2, 2000, 1)),
-                    "hostC"
+                               QueuableTaskProvider.wrapTask(tier1bktC, TaskRequestProvider.getTaskRequest(2, 2000, 1)),
+                               "hostC"
             );
-        for(int i=0; i<4; i++, A1++)
+        }
+        for (int i = 0; i < 4; i++, a1++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktA, TaskRequestProvider.getTaskRequest(2, 2000, 1)));
-        for(int i=0; i<4; i++, B1++)
+        }
+        for (int i = 0; i < 4; i++, b1++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktB, TaskRequestProvider.getTaskRequest(2, 2000, 1)));
-        for(int i=0; i<4; i++, C1++)
+        }
+        for (int i = 0; i < 4; i++, c1++) {
             queue.queueTask(QueuableTaskProvider.wrapTask(tier1bktC, TaskRequestProvider.getTaskRequest(2, 2000, 1)));
+        }
 
         queue.reset();
         Assignable<QueuableTask> taskOrFailure;
@@ -126,13 +132,13 @@ public class TieredQueueTest {
             QueuableTask t = taskOrFailure.getTask();
             switch (t.getQAttributes().getBucketName()) {
                 case "A":
-                    A1--;
+                    a1--;
                     break;
                 case "B":
-                    B1--;
+                    b1--;
                     break;
                 case "C":
-                    C1--;
+                    c1--;
                     break;
             }
 //            System.out.println("id; " + t.getId() +
@@ -140,9 +146,9 @@ public class TieredQueueTest {
 //                    ", bkt: " + t.getQAttributes().getBucketName()
 //            );
         }
-        Assert.assertEquals(0, A1);
-        Assert.assertEquals(0, B1);
-        Assert.assertEquals(0, C1);
+        Assert.assertEquals(0, a1);
+        Assert.assertEquals(0, b1);
+        Assert.assertEquals(0, c1);
     }
 
     // Test weighted DRF across buckets of a tier when SLAs are given
@@ -304,8 +310,9 @@ public class TieredQueueTest {
     private void createTasksForBuckets(TaskQueue queue, int numTasks, String... bucketNames) {
         for (String b: bucketNames) {
             QAttributes tier1bkt = new QAttributes.QAttributesAdaptor(0, b);
-            for (int i = 0; i < numTasks; i++)
+            for (int i = 0; i < numTasks; i++) {
                 queue.queueTask(QueuableTaskProvider.wrapTask(tier1bkt, TaskRequestProvider.getTaskRequest(1, 100, 1)));
+            }
         }
     }
 
@@ -315,9 +322,10 @@ public class TieredQueueTest {
         Random r = new Random(System.currentTimeMillis());
         for (String b: bucketNames) {
             QAttributes tier1bkt = new QAttributes.QAttributesAdaptor(0, b);
-            for (int i = 0; i < numTasks; i++)
+            for (int i = 0; i < numTasks; i++) {
                 schedulingService.initializeRunningTask(
-                        QueuableTaskProvider.wrapTask(tier1bkt, TaskRequestProvider.getTaskRequest(1, 100, 1)), "host" + r.nextInt());
+                                   QueuableTaskProvider.wrapTask(tier1bkt, TaskRequestProvider.getTaskRequest(1, 100, 1)), "host" + r.nextInt());
+            }
         }
     }
 

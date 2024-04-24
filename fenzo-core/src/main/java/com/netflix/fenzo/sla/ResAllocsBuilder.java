@@ -84,7 +84,7 @@ public class ResAllocsBuilder {
         return new ResAllocsImpl(taskGroupName, cores, memory, networkMbps, disk);
     }
 
-    private static class ResAllocsImpl implements ResAllocs {
+    private static final class ResAllocsImpl implements ResAllocs {
         private final String taskGroupName;
         private final double cores;
         private final double memory;

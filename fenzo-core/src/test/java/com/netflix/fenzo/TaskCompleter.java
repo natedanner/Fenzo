@@ -54,8 +54,9 @@ public class TaskCompleter {
                                 for(RandomTaskGenerator.GeneratedTask t: newTasks)
                                     sortedTaskSet.add(t);
                             }
-                            if(sortedTaskSet.isEmpty())
+                            if (sortedTaskSet.isEmpty()) {
                                 return;
+                            }
                             RandomTaskGenerator.GeneratedTask runningTask = sortedTaskSet.first();
                             long now = System.currentTimeMillis();
 //                            System.out.println("                                  Looking at next task to complete: now=" +
@@ -64,8 +65,9 @@ public class TaskCompleter {
                                 Iterator<RandomTaskGenerator.GeneratedTask> iterator = sortedTaskSet.iterator();
                                 while(iterator.hasNext()) {
                                     RandomTaskGenerator.GeneratedTask nextTask = iterator.next();
-                                    if(nextTask.getRunUntilMillis()>now)
+                                    if (nextTask.getRunUntilMillis() > now) {
                                         return;
+                                    }
                                     taskCompleter.call(nextTask);
                                     iterator.remove();
                                 }

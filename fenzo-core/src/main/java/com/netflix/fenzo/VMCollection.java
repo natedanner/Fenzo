@@ -68,8 +68,9 @@ class VMCollection {
                                                       Func1<String, AutoScaleRule> ruleGetter,
                                                       Predicate<VirtualMachineLease> vmFilter
     ) {
-        if (groupCounts == null || groupCounts.isEmpty())
+        if (groupCounts == null || groupCounts.isEmpty()) {
             return Collections.emptyMap();
+        }
         InternalVMCloner vmCloner = new InternalVMCloner();
         Map<String, List<String>> result = new HashMap<>();
         long now = System.currentTimeMillis();
@@ -95,26 +96,29 @@ class VMCollection {
                         logger.debug("Cloned lease cpu={}, mem={}, disk={}, network={}", lease.cpuCores(),
                                 lease.memoryMB(), lease.diskMB(), lease.networkMbps());
                         final Map<String, Protos.Attribute> attributeMap = lease.getAttributeMap();
-                        if (attributeMap == null || attributeMap.isEmpty())
+                        if (attributeMap == null || attributeMap.isEmpty()) {
                             logger.debug("Cloned maxRes lease has empty attributeMap");
-                        else
+                        } else {
                             for (Map.Entry<String, Protos.Attribute> entry : attributeMap.entrySet())
                                 logger.debug("Cloned maxRes lease attribute: " + entry.getKey() + ": " +
-                                        (entry.getValue() == null ? "null" : entry.getValue().getText().getValue())
+                                                   (entry.getValue() == null ? "null" : entry.getValue().getText().getValue())
                                 );
+                        }
                     }
                     int n = groupCounts.get(g);
                     final AutoScaleRule rule = ruleGetter.call(g);
                     if (rule != null) {
                         int max = rule.getMaxSize();
-                        if (max < Integer.MAX_VALUE && n > (max - vmsList.size()))
+                        if (max < Integer.MAX_VALUE && n > (max - vmsList.size())) {
                             n = max - vmsList.size();
+                        }
                     }
                     for (int i = 0; i < n; i++) {
                         final String hostname = createHostname(g, i);
                         addLease(vmCloner.cloneLease(lease, hostname, now));
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled()) {
                             logger.debug("Added cloned lease for " + hostname);
+                        }
                         hostnames.add(hostname);
                         // update total lease on the newly added VMs so they are available for use
                         getVmByName(hostname).ifPresent(AssignableVirtualMachine::updateCurrTotalLease);
@@ -161,8 +165,9 @@ class VMCollection {
         vms.putIfAbsent(group, new ConcurrentHashMap<>());
         AssignableVirtualMachine prev = null;
         if (!defaultGroupName.equals(group)) {
-            if (vms.get(defaultGroupName) != null)
+            if (vms.get(defaultGroupName) != null) {
                 prev = vms.get(defaultGroupName).remove(host);
+            }
         }
         vms.get(group).putIfAbsent(host, prev == null? newVmCreator.call(host) : prev);
         return vms.get(group).get(host);
@@ -170,18 +175,21 @@ class VMCollection {
 
     AssignableVirtualMachine getOrCreate(String host) {
         final Optional<AssignableVirtualMachine> vmByName = getVmByName(host);
-        if (vmByName.isPresent())
+        if (vmByName.isPresent()) {
             return vmByName.get();
+        }
         return create(host, defaultGroupName);
     }
 
     private AssignableVirtualMachine getOrCreate(String host, String group) {
         vms.putIfAbsent(group, new ConcurrentHashMap<>());
         final AssignableVirtualMachine avm = vms.get(group).get(host);
-        if (avm != null)
+        if (avm != null) {
             return avm;
-        if (logger.isDebugEnabled())
+        }
+        if (logger.isDebugEnabled()) {
             logger.debug("Creating new host " + host);
+        }
         return create(host, group);
     }
 
@@ -190,8 +198,9 @@ class VMCollection {
                 l.getAttributeMap().get(groupingAttrName) == null?
                         null :
                         l.getAttributeMap().get(groupingAttrName).getText().getValue();
-        if (group == null)
+        if (group == null) {
             group = defaultGroupName;
+        }
         final AssignableVirtualMachine avm = getOrCreate(l.hostname(), group);
         return avm.addLease(l);
     }
@@ -215,11 +224,13 @@ class VMCollection {
                 removed = m.remove(avm.getHostname());
             }
         }
-        if (removed != null)
+        if (removed != null) {
             return removed;
+        }
         final ConcurrentMap<String, AssignableVirtualMachine> m = vms.get(defaultGroupName);
-        if (m != null)
+        if (m != null) {
             m.remove(avm.getHostname());
+        }
         return null;
     }
 }

@@ -97,8 +97,9 @@ public class TestLongRunningScheduler {
         taskScheduler.scheduleOnce(taskRequests, leases); // Get the original leases in
         strategy.getPrintAction().call(taskScheduler.getResourceStatus());
         final List<VirtualMachineLease>[] newLeasesArray = new ArrayList[5];
-        for(int i=0; i<newLeasesArray.length; i++)
+        for (int i = 0; i < newLeasesArray.length; i++) {
             newLeasesArray[i] = new ArrayList<>();
+        }
         final AtomicInteger counter = new AtomicInteger();
         final AtomicInteger totalTasksLaunched = new AtomicInteger();
         new ScheduledThreadPoolExecutor(1).scheduleWithFixedDelay(new Runnable() {
@@ -135,8 +136,9 @@ public class TestLongRunningScheduler {
                     }
                 }
                 strategy.getPrintAction().call(taskScheduler.getResourceStatus());
-                if(tasksToAssign!=numTasksLaunched)
-                    System.out.println("############ tasksToAssign=" + tasksToAssign + ", launched="+numTasksLaunched);
+                if (tasksToAssign != numTasksLaunched) {
+                    System.out.println("############ tasksToAssign=" + tasksToAssign + ", launched=" + numTasksLaunched);
+                }
                 System.out.printf("%d tasks launched on %d hosts, %d pending\n", numTasksLaunched, numHostsAssigned, pendingTasksMap.size());
                 if(pendingTasksMap.size()>0 || counter.get()>50) {
                     System.out.println("Reached pending status in " + counter.get() + " iterations, totalTasks launched=" + totalTasksLaunched.get());
@@ -146,36 +148,37 @@ public class TestLongRunningScheduler {
         }, delayMillis, delayMillis, TimeUnit.MILLISECONDS);
     }
 
-    private static Action1<Map<String, Map<VMResource, Double[]>>> printResourceUtilization = new Action1<Map<String, Map<VMResource, Double[]>>>() {
+    private static final Action1<Map<String, Map<VMResource, Double[]>>> printResourceUtilization = new Action1<Map<String, Map<VMResource, Double[]>>>() {
         @Override
         public void call(Map<String, Map<VMResource, Double[]>> resourceStatus) {
-            if(resourceStatus==null)
+            if (resourceStatus == null) {
                 return;
-            int empty=0;
-            int partial=0;
-            int full=0;
-            int totalUsed=0;
-            for(Map.Entry<String, Map<VMResource, Double[]>> entry: resourceStatus.entrySet()) {
+            }
+            int empty = 0;
+            int partial = 0;
+            int full = 0;
+            int totalUsed = 0;
+            for (Map.Entry<String, Map<VMResource, Double[]>> entry : resourceStatus.entrySet()) {
                 Map<VMResource, Double[]> value = entry.getValue();
-                for(Map.Entry<VMResource, Double[]> resEntry: value.entrySet()) {
-                    switch (resEntry.getKey()) {
-                        case CPU:
-                            Double available = resEntry.getValue()[1];
-                            Double used = resEntry.getValue()[0];
-                            totalUsed += used;
-                            if(available == NUM_CORES_PER_HOST)
-                                empty++;
-                            else if(used == NUM_CORES_PER_HOST)
-                                full++;
-                            else
-                                partial++;
+                for (Map.Entry<VMResource, Double[]> resEntry : value.entrySet()) {
+                    if (resEntry.getKey() == VMResource.CPU) {
+                        Double available = resEntry.getValue()[1];
+                        Double used = resEntry.getValue()[0];
+                        totalUsed += used;
+                        if (available == NUM_CORES_PER_HOST) {
+                            empty++;
+                        } else if (used == NUM_CORES_PER_HOST) {
+                            full++;
+                        } else {
+                            partial++;
+                        }
                     }
                 }
             }
             outputStream.printf("%5.2f, %d, %d,%d\n",
-                    (totalUsed * 100.0) / (double) (NUM_CORES_PER_HOST * NUM_HOSTS), empty, partial, full);
+                               (totalUsed * 100.0) / (double) (NUM_CORES_PER_HOST * NUM_HOSTS), empty, partial, full);
             System.out.printf("Utilization=%5.2f%% (%d totalUsed), empty=%d, partial=%d,ful=%d\n",
-                    (totalUsed * 100.0) / (double) (NUM_CORES_PER_HOST * NUM_HOSTS), totalUsed, empty, partial, full);
+                               (totalUsed * 100.0) / (double) (NUM_CORES_PER_HOST * NUM_HOSTS), totalUsed, empty, partial, full);
         }
     };
 
@@ -276,32 +279,35 @@ public class TestLongRunningScheduler {
                     int total=0;
                     for(TaskRequest request: targetVM.getRunningTasks()) {
                         total++;
-                        if(isSame((RandomTaskGenerator.GeneratedTask)request, generatedTask))
+                        if (isSame((RandomTaskGenerator.GeneratedTask) request, generatedTask)) {
                             sameCount++;
+                        }
                     }
                     for(TaskAssignmentResult result: targetVM.getTasksCurrentlyAssigned()) {
                         total++;
-                        if(isSame((RandomTaskGenerator.GeneratedTask) result.getRequest(), generatedTask))
+                        if (isSame((RandomTaskGenerator.GeneratedTask) result.getRequest(), generatedTask)) {
                             sameCount++;
+                        }
                     }
-                    if(total==0)
+                    if (total == 0) {
                         return 1.0;
+                    }
                     return (double)sameCount/(double)total;
                 }
             };
         }
         private boolean isSame(RandomTaskGenerator.GeneratedTask request, RandomTaskGenerator.GeneratedTask generatedTask) {
-            if(request.getRuntimeMillis() == generatedTask.getRuntimeMillis())
-                return true;
-            return false;
+            return request.getRuntimeMillis() == generatedTask.getRuntimeMillis();
         }
         private boolean isSame(Set<RandomTaskGenerator.GeneratedTask> requests) {
-            if(requests==null || requests.isEmpty())
+            if (requests == null || requests.isEmpty()) {
                 return true;
+            }
             RandomTaskGenerator.GeneratedTask generatedTask = requests.iterator().next();
             for(RandomTaskGenerator.GeneratedTask task: requests)
-                if(!isSame(task, generatedTask))
+                if (!isSame(task, generatedTask)) {
                     return false;
+                }
             return true;
         }
         @Override
@@ -325,12 +331,13 @@ public class TestLongRunningScheduler {
                     int unused=0;
                     for(String hostname: stringMapMap.keySet()) {
                         Set<RandomTaskGenerator.GeneratedTask> generatedTasks = hostToTasksMap.get(hostname);
-                        if(generatedTasks==null)
+                        if (generatedTasks == null) {
                             unused++;
-                        else if(isSame(generatedTasks))
+                        } else if (isSame(generatedTasks)) {
                             same++;
-                        else
+                        } else {
                             diff++;
+                        }
                     }
                     outputStream.printf("%d, %d, %d\n", unused, same, diff);
                     System.out.printf("Unused=%d, same=%d, different=%d\n", unused, same, diff);
@@ -342,8 +349,9 @@ public class TestLongRunningScheduler {
             return new Action2<String, RandomTaskGenerator.GeneratedTask>() {
                 @Override
                 public void call(String hostname, RandomTaskGenerator.GeneratedTask task) {
-                    if(hostToTasksMap.get(hostname)==null)
+                    if (hostToTasksMap.get(hostname) == null) {
                         hostToTasksMap.put(hostname, new HashSet<RandomTaskGenerator.GeneratedTask>());
+                    }
                     hostToTasksMap.get(hostname).add(task);
                 }
             };

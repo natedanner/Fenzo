@@ -30,7 +30,7 @@ public class SpreadingFitnessCalculators {
      * A CPU spreading fitness calculator. This fitness calculator has the effect of assigning a task to a
      * host that has the most CPUs available.
      */
-    public final static VMTaskFitnessCalculator cpuSpreader = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator cpuSpreader = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "CpuSpreader";
@@ -47,7 +47,7 @@ public class SpreadingFitnessCalculators {
      * A memory bin packing fitness calculator. This fitness calculator has the effect of assigning a task to a
      * host that has the most memory available.
      */
-    public final static VMTaskFitnessCalculator memorySpreader = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator memorySpreader = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "MemorySpreader";
@@ -64,7 +64,7 @@ public class SpreadingFitnessCalculators {
      * A network bandwidth spreading fitness calculator. This fitness calculator has the effect of assigning a
      * task to a host that has the most amount of available network bandwidth.
      */
-    public final static VMTaskFitnessCalculator networkSpreader = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator networkSpreader = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "NetworkSpreader";
@@ -81,7 +81,7 @@ public class SpreadingFitnessCalculators {
      * A bin packing fitness calculator that achieves both CPU and Memory spreading with equal weights to
      * both goals.
      */
-    public final static VMTaskFitnessCalculator cpuMemSpreader = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator cpuMemSpreader = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "CpuAndMemorySpreader";
@@ -99,7 +99,7 @@ public class SpreadingFitnessCalculators {
      * A fitness calculator that achieves CPU, Memory, and network bandwidth spreading with equal weights to
      * each of the three goals.
      */
-    public final static VMTaskFitnessCalculator cpuMemNetworkSpreader = new VMTaskFitnessCalculator() {
+    public static final VMTaskFitnessCalculator cpuMemNetworkSpreader = new VMTaskFitnessCalculator() {
         @Override
         public String getName() {
             return "CPUAndMemoryAndNetworkBinPacker";

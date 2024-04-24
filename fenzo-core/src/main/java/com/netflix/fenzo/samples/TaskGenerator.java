@@ -49,13 +49,14 @@ public class TaskGenerator implements Runnable {
         this.numTasks = numTasks;
     }
 
-    private int launchedTasks = 0;
+    private int launchedTasks;
 
     @Override
     public void run() {
         for (int i = 0; i < numIters; i++) {
-            for (int j = 0; j < numTasks; j++)
+            for (int j = 0; j < numTasks; j++) {
                 taskQueue.offer(getTaskRequest(launchedTasks++));
+            }
             System.out.println("        Generated " + numTasks + " tasks so far");
             try {
                 Thread.sleep(1000);
